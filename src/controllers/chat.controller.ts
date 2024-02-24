@@ -10,6 +10,8 @@ import { User } from '@interfaces/users.interface';
 import { ChatModel } from '@/models/chat.model';
 import { FindOptions, WhereOptions } from 'sequelize';
 import { Op } from 'sequelize';
+import { emitSocketEvent } from '@/socket';
+import { MessageModel } from '@/models/message.model';
 
 export class ChatController {
   public chat = Container.get(ChatService);
@@ -46,6 +48,16 @@ export class ChatController {
             },
           ],
         },
+        include:[
+          {
+            model: MessageModel,
+            as: 'message'
+          },
+          {
+            model: UserModel,
+            as: 'receiver'
+          }
+        ],
         defaults: {
           name: 'Chat',
           admin_id: userData.id, 
@@ -54,9 +66,15 @@ export class ChatController {
         }
       });
 
+      emitSocketEvent(
+        req,
+        userData.id,
+        'newChat',
+        []
+      );
 
       res.status(201).json({
-        data: [chatData],
+        data: chatData,
         message: 'save',
       });
     } catch (error) {
@@ -66,4 +84,38 @@ export class ChatController {
   };
 
 
+  public getAllMessages = async(req: RequestWithUser, res: Response, next: NextFunction) => {
+    try {
+      const userData: User = req.user;
+          
+      const messages = await ChatModel.findAll({
+        where:{
+          [Op.or]: [
+            {
+              admin_id: userData.id}, 
+            {
+              receiver_id: userData.id
+            },
+          ],
+        },
+        include:[{
+          model: UserModel,
+          as: 'receiver'
+        },
+        {
+          model: UserModel,
+          as: 'owner'
+        }
+      ],
+      });
+
+      res.status(201).json({
+        data: messages,
+        message: 'save',
+      });
+    } catch (error) {
+      console.log(error)
+      next(error);
+    }
+  }
 }

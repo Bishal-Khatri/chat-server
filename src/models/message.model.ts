@@ -1,5 +1,6 @@
 import { Sequelize, DataTypes, Model, Optional } from 'sequelize';
 import { Message } from '@interfaces/message.interface';
+import { ChatModel } from './chat.model';
 
 export type MessageCreationAttributes = Optional<Message, 'id' | 'chat_id' | 'sender_id' | 'message'>;
 
@@ -39,6 +40,11 @@ export default function (sequelize: Sequelize): typeof MessageModel {
       sequelize,
     },
   );
+
+  ChatModel.hasMany(MessageModel, {
+    foreignKey: 'chat_id',
+    as: 'message',
+  });
 
   return MessageModel;
 }

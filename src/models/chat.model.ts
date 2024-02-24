@@ -1,5 +1,7 @@
-import { Sequelize, DataTypes, Model, Optional } from 'sequelize';
+import { Sequelize, DataTypes, Model, Optional, BelongsTo } from 'sequelize';
 import { Chat } from '@/interfaces/chat.interface';
+import { UserModel } from './user.model';
+import { MessageModel } from './message.model';
 
 export type ChatCreationAttributes = Optional<Chat, 'id' | 'name' | 'is_group' | 'last_message_id' | 'admin_id' | 'receiver_id'>;
 
@@ -44,11 +46,26 @@ export default function (sequelize: Sequelize): typeof ChatModel {
         type: DataTypes.INTEGER,
       },
     },
+
     {
       tableName: 'chats',
       sequelize,
     },
   );
 
+  ChatModel.belongsTo(UserModel, {
+    foreignKey: 'receiver_id',
+    as: 'receiver',
+  });
+
+  ChatModel.belongsTo(UserModel, {
+    foreignKey: 'admin_id',
+    as: 'owner',
+  });
+
+  // ChatModel.hasMany(MessageModel, {
+  //   foreignKey: 'chat_id',
+  //   as: 'messages',
+  // });
   return ChatModel;
 }
