@@ -1,0 +1,12 @@
+# baseURL
+@baseURL = http://localhost:3000
+
+###
+# Save Message
+POST {{ baseURL }}/chat/save
+Content-Type: application/json
+
+{
+    "receiver_id": 1,
+	"message": "Hello"
+}

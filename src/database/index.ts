@@ -1,7 +1,8 @@
 import Sequelize from 'sequelize';
 import { NODE_ENV, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_DATABASE } from '@config';
-import UserModel from '@models/users.model';
+import UserModel from '@/models/user.model';
 import { logger } from '@utils/logger';
+import ChatModel from '@/models/chat.model';
 
 const sequelize = new Sequelize.Sequelize(DB_DATABASE, DB_USER, DB_PASSWORD, {
   dialect: 'mysql',
@@ -29,6 +30,7 @@ sequelize.authenticate();
 
 export const DB = {
   Users: UserModel(sequelize),
+  Chats: ChatModel(sequelize),
   sequelize, // connection instance (RAW queries)
   Sequelize, // library
 };
