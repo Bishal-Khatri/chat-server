@@ -49,6 +49,19 @@ export class AuthController {
     }
   };
 
+  public authUser = async (req: RequestWithUser, res: Response, next: NextFunction) => {
+    try {
+      const userData: User = req.user;
+
+      res.status(200).json({
+        data: userData,
+        message: 'authUser',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public logOut = async (req: RequestWithUser, res: Response, next: NextFunction) => {
     try {
       const userData: User = req.user;

@@ -4,16 +4,12 @@
       <div class="card chat-app">
         <div id="plist" class="people-list">
           <div class="input-group">
-            <div class="input-group-prepend">
-              <span class="input-group-text"><i class="fa fa-search"></i></span>
-            </div>
-            <input type="text" class="form-control" placeholder="Search..." />
+            <input type="text" class="form-control" placeholder="Search User" />
           </div>
-          <div class="row">
+          <div class="row mt-2">
             <div class="col-md-12">
-              <a class="btn btn-link float-right" href="#" @click="logout"
-                ><i class="fa fa-sign-out mr-1 text-danger"></i>Logout</a
-              >
+              <a href="#" data-toggle="modal" data-target="#add-user-modal" class="btn btn-outline-primary btn-sm mr-2"><i class="fa fa-plus mr-1 text-danger"></i>Add New User</a>
+              <a class="btn btn-outline-primary btn-sm" href="#" @click.prevent="logout"><i class="fa fa-sign-out mr-1 text-danger"></i>Logout</a>
             </div>
           </div>
           <ul class="list-unstyled chat-list mt-2 mb-0" v-if="chats.length > 0">
@@ -93,12 +89,6 @@
                 <div class="message my-message">{{value.message}}</div>
               </template>
               </li>
-              <!-- <li class="clearfix">
-                <div class="message-data">
-                  <span class="message-data-time">10:12 AM, Today</span>
-                </div>
-                <div class="message my-message">Are we meeting today?</div>
-              </li> -->
             </ul>
           </div>
           <div class="chat-message clearfix">
@@ -109,8 +99,35 @@
               <input
                 type="text"
                 class="form-control"
-                placeholder="Enter text here..."
+                placeholder="Enter text here..." v-model="message"
+                @keyup.enter="sendMessage"
               />
+            </div>
+          </div>
+        </div>
+        <div class="chat" v-else>
+          <div class="chat-header clearfix">
+            Chatap
+            </div>
+            <div class="chat-history">
+              <div class="row">
+                <div class="col-md-12 text-center">
+                  <img src="/images/chatap.png" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+      </div>
+
+      <div class="modal" id="add-user-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-body">
+              <div class="mb-3 mt-3">
+              <input type="email" class="form-control" id="email" aria-describedby="emailHelp" v-model="email"
+                placeholder="Email address" >
+                </div>
+                <div class="text-center"><button type="submit" @click.prevent="newChat" class="btn btn-color w-100">Add User</button></div>
             </div>
           </div>
         </div>
@@ -128,7 +145,9 @@ export default {
   data() {
     return {
       success: null,
-      error: null
+      error: null,
+      email: '',
+      message:''
     };
   },
   mounted() {
@@ -141,7 +160,21 @@ export default {
 
   methods: {
     ...mapActions("auth", ["sendLogoutRequest", "sendVerifyResendRequest"]),
-    ...mapActions("message", ["getAllMessages", 'getMessage']),
+    ...mapActions("message", ["getAllMessages", 'getMessage', 'addNewChat']),
+
+    async newChat(){
+      const formData = {
+        email: this.email
+      }
+      await this.addNewChat(formData);
+      this.getAllMessages();
+    },
+
+    async sendMessage(){
+      if(this.message){
+        // await this.addNewChat(formData);
+      }
+    },
 
     verifyResend() {
       this.success = this.error = null;
@@ -167,3 +200,22 @@ export default {
   }
 };
 </script>
+<style scoped>
+.btn-color{
+  background-color: #0e1c36;
+  color: #fff;
+  
+}
+
+.profile-image-pic{
+  height: 200px;
+  width: 200px;
+  object-fit: cover;
+}
+.cardbody-color{
+  background-color: #ebf2fa;
+}
+a{
+  text-decoration: none;
+}
+</style>

@@ -22,7 +22,7 @@ export default {
       axios
         .get("http://localhost:5000/user")
         .then(response => {
-          commit("setUserData", response.data);
+          commit("setUserData", response.data.data);
         })
         .catch(() => {
           localStorage.removeItem("authToken");

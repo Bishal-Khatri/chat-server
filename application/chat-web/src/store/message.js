@@ -23,6 +23,18 @@ export default {
   },
 
   actions: {
+    addNewChat(_,payload){
+      axios
+        .post("http://localhost:5000/chat/create", payload)
+        .then(response => {
+          console.log(response);
+          alert("User added successfully.")
+          // commit("setChats", response.data.data);
+        })
+        .catch(e => {
+          console.log(e);
+        });
+    },
     getAllMessages({ commit }) {
       axios
         .get("http://localhost:5000/chat/messages")

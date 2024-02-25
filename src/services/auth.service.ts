@@ -56,7 +56,7 @@ export class AuthService {
   }
 
   public async logout(userData: User): Promise<User> {
-    const findUser: User = await DB.Users.findOne({ where: { email: userData.email, password: userData.password } });
+    const findUser: User = await DB.Users.findOne({ where: { email: userData.email } });
     if (!findUser) throw new HttpException(409, "User doesn't exist");
 
     return findUser;
