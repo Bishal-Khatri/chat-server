@@ -1,2 +1,2 @@
 /dist
-/application/chat-web
+/application/**/*.vue

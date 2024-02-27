@@ -5,7 +5,7 @@ export default {
 
   state: {
     chats: [],
-    message: null
+    message: []
   },
 
   getters: {
@@ -23,13 +23,23 @@ export default {
   },
 
   actions: {
+    send(_,payload){
+      axios
+        .post("http://localhost:5000/chat/send", payload)
+        .then(response => {
+          console.log(response);
+          
+        })
+        .catch(e => {
+          console.log(e);
+        });
+    },
     addNewChat(_,payload){
       axios
         .post("http://localhost:5000/chat/create", payload)
         .then(response => {
           console.log(response);
           alert("User added successfully.")
-          // commit("setChats", response.data.data);
         })
         .catch(e => {
           console.log(e);

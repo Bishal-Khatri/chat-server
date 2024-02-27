@@ -19,166 +19,156 @@ export class ChatController {
   public createChat = async (req: RequestWithUser, res: Response, next: NextFunction) => {
     try {
       const { email } = req.body;
-      
+
       // Find receiver by ID
       const receiver = await UserModel.findOne({
-        where:{
-          email: email
-        }
+        where: {
+          email: email,
+        },
       });
 
       if (!receiver) {
-        throw new HttpException(404, "User does not exist");
+        throw new HttpException(404, 'User does not exist');
       }
       const userData: User = req.user;
-    
+
       if (receiver.id === userData.id) {
-        throw new HttpException(404, "You cannot chat with yourself");
+        throw new HttpException(404, 'You cannot chat with yourself');
       }
 
       /*
        * Create new chat record between auth user and receiver if not available
        */
       const chatData = await ChatModel.findOrCreate({
-        where:{
+        where: {
           [Op.or]: [
             {
               admin_id: userData.id,
-              receiver_id: receiver.id
-            }, 
+              receiver_id: receiver.id,
+            },
             {
               receiver_id: userData.id,
-              admin_id: receiver.id
+              admin_id: receiver.id,
             },
           ],
         },
-        include:[
+        include: [
           {
             model: MessageModel,
-            as: 'message'
+            as: 'message',
           },
           {
             model: UserModel,
-            as: 'receiver'
-          }
+            as: 'receiver',
+          },
         ],
         defaults: {
           name: 'Chat',
-          admin_id: userData.id, 
+          admin_id: userData.id,
           receiver_id: receiver.id,
-          is_group: false
-        }
+          is_group: false,
+        },
       });
 
-      emitSocketEvent(
-        req,
-        userData.id,
-        'newChat',
-        []
-      );
+      emitSocketEvent(req, userData.id, 'newChat', []);
 
       res.status(201).json({
         data: chatData,
         message: 'newChat',
       });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       next(error);
     }
   };
 
-
   public getChat = async (req: RequestWithUser, res: Response, next: NextFunction) => {
     try {
       const { receiverId } = req.params;
-      
+
       // Find receiver by ID
       const receiver = await UserModel.findByPk(receiverId);
 
       if (!receiver) {
-        throw new HttpException(404, "Receiver does not exist");
+        throw new HttpException(404, 'Receiver does not exist');
       }
       const userData: User = req.user;
-    
+
       if (receiver.id === userData.id) {
-        throw new HttpException(404, "You cannot chat with yourself");
+        throw new HttpException(404, 'You cannot chat with yourself');
       }
 
       /*
        * Create new chat record between auth user and receiver if not available
        */
       const chatData = await ChatModel.findOrCreate({
-        where:{
+        where: {
           [Op.or]: [
             {
               admin_id: userData.id,
-              receiver_id: receiver.id
-            }, 
+              receiver_id: receiver.id,
+            },
             {
               receiver_id: userData.id,
-              admin_id: receiver.id
+              admin_id: receiver.id,
             },
           ],
         },
-        include:[
+        include: [
           {
             model: MessageModel,
-            as: 'message'
+            as: 'message',
           },
           {
             model: UserModel,
-            as: 'receiver'
-          }
+            as: 'receiver',
+          },
         ],
         defaults: {
           name: 'Chat',
-          admin_id: userData.id, 
+          admin_id: userData.id,
           receiver_id: receiver.id,
-          is_group: false
-        }
+          is_group: false,
+        },
       });
 
-      emitSocketEvent(
-        req,
-        userData.id,
-        'newChat',
-        []
-      );
+      emitSocketEvent(req, userData.id, 'newChat', []);
 
       res.status(201).json({
         data: chatData,
         message: 'save',
       });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       next(error);
     }
   };
 
-
-  public getAllMessages = async(req: RequestWithUser, res: Response, next: NextFunction) => {
+  public getAllMessages = async (req: RequestWithUser, res: Response, next: NextFunction) => {
     try {
       const userData: User = req.user;
-          
+
       const messages = await ChatModel.findAll({
-        where:{
+        where: {
           [Op.or]: [
             {
-              admin_id: userData.id}, 
+              admin_id: userData.id,
+            },
             {
-              receiver_id: userData.id
+              receiver_id: userData.id,
             },
           ],
         },
-        include:[{
-          model: UserModel,
-          as: 'receiver'
-        },
-        {
-          model: UserModel,
-          as: 'owner'
-        }
-      ],
+        include: [
+          {
+            model: UserModel,
+            as: 'receiver',
+          },
+          {
+            model: UserModel,
+            as: 'owner',
+          },
+        ],
       });
 
       res.status(201).json({
@@ -186,8 +176,31 @@ export class ChatController {
         message: 'save',
       });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       next(error);
     }
-  }
+  };
+
+  public sendMessage = async (req: RequestWithUser, res: Response, next: NextFunction) => {
+    try {
+      const userData: User = req.user;
+      const { message, chat } = req.body;
+
+      const messageData = await MessageModel.create({
+        message: message,
+        chat_id: chat.id,
+        sender_id: userData.id,
+      });
+
+      emitSocketEvent(req, userData.id, 'newChat', []);
+      
+      res.status(201).json({
+        data: messageData,
+        message: 'save',
+      });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  };
 }

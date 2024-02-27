@@ -1,178 +1,307 @@
 <template>
-  <div class="row clearfix">
-    <div class="col-lg-12 p-0">
-      <div class="card chat-app">
-        <div id="plist" class="people-list">
-          <div class="input-group">
-            <input type="text" class="form-control" placeholder="Search User" />
-          </div>
-          <div class="row mt-2">
-            <div class="col-md-12">
-              <a href="#" data-toggle="modal" data-target="#add-user-modal" class="btn btn-outline-primary btn-sm mr-2"><i class="fa fa-plus mr-1 text-danger"></i>Add New User</a>
-              <a class="btn btn-outline-primary btn-sm" href="#" @click.prevent="logout"><i class="fa fa-sign-out mr-1 text-danger"></i>Logout</a>
-            </div>
-          </div>
-          <ul class="list-unstyled chat-list mt-2 mb-0" v-if="chats.length > 0">
-            <li
-              class="clearfix"
-              v-for="chat in chats"
-              :key="chat.id"
-              @click.prevent="getChat(chat.receiver.id)"
+  <div>
+    <button
+      data-drawer-target="default-sidebar"
+      data-drawer-toggle="default-sidebar"
+      aria-controls="default-sidebar"
+      type="button"
+      class="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+    >
+      <span class="sr-only">Open sidebar</span>
+      <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <path
+          clip-rule="evenodd"
+          fill-rule="evenodd"
+          d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"
+        ></path>
+      </svg>
+    </button>
+
+    <aside
+      id="default-sidebar"
+      class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0"
+      aria-label="Sidebar"
+    >
+      <div class="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
+        <div class="grid gap-1">
+          <button
+            @click.prevent="showAddUser"
+            type="button"
+            class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-primary rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            <svg
+              class="w-3 h-3 text-white me-2"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
             >
-              <img
-                src="https://bootdey.com/img/Content/avatar/avatar1.png"
-                alt="avatar"
-              />
-              <div class="about">
-                <div class="name" v-if="chat.receiver">{{ chat.receiver.name}}</div>
-                <div class="status">
-                  <i class="fa fa-circle offline"></i> left 7 mins ago
-                </div>
-              </div>
-            </li>
-          </ul>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+
+            Add New User
+          </button>
+          <button
+            @click.prevent="logout"
+            type="button"
+            class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-danger rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            <svg
+              class="w-3 h-3 text-white me-2"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" />
+            </svg>
+            Logout
+          </button>
         </div>
-        <div class="chat" v-if="message">
-          <div class="chat-header clearfix">
-            <div class="row">
-              <div class="col-lg-6">
-                <a
-                  href="javascript:void(0);"
-                  data-toggle="modal"
-                  data-target="#view_info"
-                >
-                  <img
-                    src="https://bootdey.com/img/Content/avatar/avatar2.png"
-                    alt="avatar"
-                  />
-                </a>
-                <div class="chat-about">
-                  <h6 class="m-b-0" v-if="message[0].receiver">{{ message[0].receiver.name ?? ''}}</h6>
-                  <small>Last seen: 2 hours ago</small>
-                </div>
+        <div
+          id="add-user-dialog"
+          class="fixed left-0 top-0 bg-black w-screen h-screen bg-opacity-50 justify-center items-center hidden opacity-0 transition-opacity duration-500"
+        >
+          <div class="bg-white rounded shadow-sm px-8 py-4 w-6/12">
+            <h2 class="text-center">Add new user</h2>
+            <div class="grid gap-6 mb-6">
+              <div>
+                <label for="first_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"> Email address</label>
+                <input
+                  type="text"
+                  id="first_name"
+                  v-model="email"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  placeholder="john@exaple.com"
+                  required
+                />
               </div>
-              <div class="col-lg-6 hidden-sm text-right">
-                <a href="javascript:void(0);" class="btn btn-outline-secondary"
-                  ><i class="fa fa-camera"></i
-                ></a>
-                <a href="javascript:void(0);" class="btn btn-outline-primary"
-                  ><i class="fa fa-image"></i
-                ></a>
-                <a href="javascript:void(0);" class="btn btn-outline-info"
-                  ><i class="fa fa-cogs"></i
-                ></a>
-                <a href="javascript:void(0);" class="btn btn-outline-warning"
-                  ><i class="fa fa-question"></i
-                ></a>
+              <div class="gap-2 flex justify-between">
+                <button @click.prevent="newChat" class="w-40 bg-primary p-2 rounded block text-white shadow-md">Send Request</button>
+                <button @click.prevent="hideAddUser" class="w-40 bg-default p-2 rounded block shadow-md">Cancel</button>
               </div>
-            </div>
-          </div>
-          <div class="chat-history" v-if="message[0].message.length > 0">
-            <ul class="m-b-0" >
-              <li class="clearfix" v-for="value in message[0].message" :key="value.id">
-                <template v-if="user.id===value.sender_id">
-                <div class="message-data text-right">
-                  <span class="message-data-time">10:10 AM, Today</span>
-                  <img
-                    src="https://bootdey.com/img/Content/avatar/avatar7.png"
-                    alt="avatar"
-                  />
-                </div>
-                <div class="message other-message float-right">
-                 {{value.message}}
-                </div>
-              </template>
-              <template v-else>
-                <div class="message-data">
-                  <span class="message-data-time">10:12 AM, Today</span>
-                </div>
-                <div class="message my-message">{{value.message}}</div>
-              </template>
-              </li>
-            </ul>
-          </div>
-          <div class="chat-message clearfix">
-            <div class="input-group mb-0">
-              <div class="input-group-prepend">
-                <span class="input-group-text"><i class="fa fa-send"></i></span>
-              </div>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Enter text here..." v-model="message"
-                @keyup.enter="sendMessage"
-              />
             </div>
           </div>
         </div>
-        <div class="chat" v-else>
-          <div class="chat-header clearfix">
-            Chatap
-            </div>
-            <div class="chat-history">
-              <div class="row">
-                <div class="col-md-12 text-center">
-                  <img src="/images/chatap.png" alt="">
-                </div>
+
+        <ul class="space-y-2 font-medium pt-2">
+          <li v-for="chat in chats" :key="chat.id" @click.prevent="getChat(chat)">
+            <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+              <div class="relative">
+                <img class="w-10 h-10 rounded-full" src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="" />
+                <span
+                  class="absolute bottom-0 left-8 transform translate-y-1/4 w-3.5 h-3.5 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full"
+                ></span>
               </div>
-            </div>
+              <span class="ms-3" v-if="chat.receiver">{{ chat.receiver.name }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <div class="p-4 sm:ml-64 flex flex-col h-screen" v-if="message.length > 0">
+      <div class="grid">
+        <div class="flex gap-2">
+          <img class="w-10 h-10 rounded-full" src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="Jese image" />
+          <div>
+            <h2 class="font-bold">{{ message[0].receiver.name ?? '-' }}</h2>
+            <h4>{{ message[0].receiver.email ?? '-' }}</h4>
           </div>
+        </div>
       </div>
 
-      <div class="modal" id="add-user-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content">
-            <div class="modal-body">
-              <div class="mb-3 mt-3">
-              <input type="email" class="form-control" id="email" aria-describedby="emailHelp" v-model="email"
-                placeholder="Email address" >
+      <div class="p-4 rounded-lg dark:border-gray-700 overflow-y-auto">
+        <div v-if="message.length > 0">
+          <div v-for="value in message[0].message" :key="value.id">
+            <div class="flex items-end justify-end gap-2.5 mb-2" v-if="user.id === value.sender_id">
+              <div class="bg-blue-50 flex flex-col w-full max-w-[320px] leading-1.5 p-4 border-gray-200 rounded-e-xl rounded-es-xl dark:bg-gray-700">
+                <p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">
+                  {{ value.message }}
+                </p>
+                <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                  <span class="text-sm font-normal text-gray-500 dark:text-gray-400">11:46</span>
+                  <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                  </svg>
                 </div>
-                <div class="text-center"><button type="submit" @click.prevent="newChat" class="btn btn-color w-100">Add User</button></div>
+              </div>
+              <button
+                id="dropdownMenuIconButton"
+                data-dropdown-toggle="dropdownDots"
+                data-dropdown-placement="bottom-start"
+                class="inline-flex self-center items-center p-2 text-sm font-medium text-center text-gray-900 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none dark:text-white focus:ring-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:focus:ring-gray-600"
+                type="button"
+              >
+                <svg
+                  class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 4 15"
+                >
+                  <path
+                    d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"
+                  />
+                </svg>
+              </button>
+              <div
+                id="dropdownDots"
+                class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-40 dark:bg-gray-700 dark:divide-gray-600"
+              >
+                <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconButton">
+                  <li>
+                    <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Reply</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-2.5 mb-2" v-else>
+              <div class="flex flex-col w-full max-w-[320px] leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl dark:bg-gray-700">
+                <p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">
+                  {{ value.message }}
+                </p>
+                <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                  <span class="text-sm font-normal text-gray-500 dark:text-gray-400">11:46</span>
+                  <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                  </svg>
+                </div>
+              </div>
+              <button
+                id="dropdownMenuIconButton"
+                data-dropdown-toggle="dropdownDots"
+                data-dropdown-placement="bottom-start"
+                class="inline-flex self-center items-center p-2 text-sm font-medium text-center text-gray-900 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none dark:text-white focus:ring-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:focus:ring-gray-600"
+                type="button"
+              >
+                <svg
+                  class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 4 15"
+                >
+                  <path
+                    d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"
+                  />
+                </svg>
+              </button>
+              <div
+                id="dropdownDots"
+                class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-40 dark:bg-gray-700 dark:divide-gray-600"
+              >
+                <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconButton">
+                  <li>
+                    <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Reply</a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <footer class="relative">
+        <div class="flex">
+          <input
+            v-model="newMessage"
+            @keyup.enter="sendMessage"
+            type="text"
+            class="flex-1 rounded-l-lg p-2 border-dashed border-t border-b border-l text-gray-800 border-gray-300 bg-white h-24 focus:ring-0"
+            placeholder="Type a message..."
+          />
+          <button class="p-4 bg-gray-50">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13"
+              />
+            </svg>
+          </button>
+          <button class="p-4 bg-gray-50">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+              />
+            </svg>
+          </button>
+        </div>
+      </footer>
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex";
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
-  name: "Home",
+  name: 'Home',
 
   data() {
     return {
       success: null,
       error: null,
       email: '',
-      message:''
+      newMessage: '',
+      currentChat: '',
     };
   },
   mounted() {
     this.getAllMessages();
   },
   computed: {
-    ...mapGetters("auth", ["user"]),
-    ...mapGetters("message", ["chats", "message"])
+    ...mapGetters('auth', ['user']),
+    ...mapGetters('message', ['chats', 'message']),
   },
 
   methods: {
-    ...mapActions("auth", ["sendLogoutRequest", "sendVerifyResendRequest"]),
-    ...mapActions("message", ["getAllMessages", 'getMessage', 'addNewChat']),
+    ...mapActions('auth', ['sendLogoutRequest', 'sendVerifyResendRequest']),
+    ...mapActions('message', ['getAllMessages', 'getMessage', 'addNewChat', 'send']),
 
-    async newChat(){
-      const formData = {
-        email: this.email
-      }
-      await this.addNewChat(formData);
-      this.getAllMessages();
+    showAddUser() {
+      let dialog = document.getElementById('add-user-dialog');
+      dialog.classList.remove('hidden');
+      dialog.classList.add('flex');
+      setTimeout(() => {
+        dialog.classList.add('opacity-100');
+      }, 20);
     },
 
-    async sendMessage(){
-      if(this.message){
-        // await this.addNewChat(formData);
+    hideAddUser() {
+      let dialog = document.getElementById('add-user-dialog');
+      dialog.classList.add('opacity-0');
+      dialog.classList.remove('opacity-100');
+      setTimeout(() => {
+        dialog.classList.add('hidden');
+        dialog.classList.remove('flex');
+      }, 500);
+    },
+
+    async newChat() {
+      const formData = {
+        email: this.email,
+      };
+      await this.addNewChat(formData);
+      this.getAllMessages();
+      this.hideAddUser();
+    },
+
+    async sendMessage() {
+      if (this.newMessage) {
+        const formData = {
+          chat: this.currentChat,
+          message: this.newMessage,
+        };
+        await this.send(formData);
+        this.newMessage = '';
+        this.getMessage(this.currentChat.receiver.id);
       }
     },
 
@@ -180,42 +309,41 @@ export default {
       this.success = this.error = null;
       this.sendVerifyResendRequest()
         .then(() => {
-          this.success =
-            "A fresh verification link has been sent to your email address.";
+          this.success = 'A fresh verification link has been sent to your email address.';
         })
         .catch(error => {
-          this.error = "Error sending verification link.";
+          this.error = 'Error sending verification link.';
           console.log(error.response);
         });
     },
 
-    getChat(receiverId){
-      this.getMessage(receiverId);
+    getChat(chat) {
+      this.currentChat = chat;
+      this.getMessage(chat.receiver.id);
     },
 
     logout() {
       this.sendLogoutRequest();
-      this.$router.push("/");
-    }
-  }
+      this.$router.push('/');
+    },
+  },
 };
 </script>
 <style scoped>
-.btn-color{
+.btn-color {
   background-color: #0e1c36;
   color: #fff;
-  
 }
 
-.profile-image-pic{
+.profile-image-pic {
   height: 200px;
   width: 200px;
   object-fit: cover;
 }
-.cardbody-color{
+.cardbody-color {
   background-color: #ebf2fa;
 }
-a{
+a {
   text-decoration: none;
 }
 </style>
