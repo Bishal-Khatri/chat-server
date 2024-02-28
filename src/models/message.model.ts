@@ -1,12 +1,11 @@
 import { Sequelize, DataTypes, Model, Optional } from 'sequelize';
 import { Message } from '@interfaces/message.interface';
-import { ChatModel } from './chat.model';
 
-export type MessageCreationAttributes = Optional<Message, 'id' | 'chat_id' | 'sender_id' | 'message'>;
+export type MessageCreationAttributes = Optional<Message, 'id' | 'inbox_hash' | 'sender_id' | 'message'>;
 
 export class MessageModel extends Model<Message, MessageCreationAttributes> implements Message {
   public id: number;
-  public chat_id: number;
+  public inbox_hash: string;
   public sender_id: number;
   public message: string;
 
@@ -22,9 +21,9 @@ export default function (sequelize: Sequelize): typeof MessageModel {
         primaryKey: true,
         type: DataTypes.INTEGER,
       },
-      chat_id: {
+      inbox_hash: {
         allowNull: false,
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
       },
       sender_id: {
         allowNull: false,
@@ -40,11 +39,6 @@ export default function (sequelize: Sequelize): typeof MessageModel {
       sequelize,
     },
   );
-
-  ChatModel.hasMany(MessageModel, {
-    foreignKey: 'chat_id',
-    as: 'message',
-  });
 
   return MessageModel;
 }

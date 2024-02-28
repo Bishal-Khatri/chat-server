@@ -1,9 +1,8 @@
 import { Sequelize, DataTypes, Model, Optional, BelongsTo } from 'sequelize';
 import { Chat } from '@/interfaces/chat.interface';
 import { UserModel } from './user.model';
-import { MessageModel } from './message.model';
 
-export type ChatCreationAttributes = Optional<Chat, 'id' | 'name' | 'is_group' | 'last_message_id' | 'admin_id' | 'receiver_id'>;
+export type ChatCreationAttributes = Optional<Chat, 'id' | 'name' | 'is_group' | 'last_message_id' | 'admin_id' | 'receiver_id' | 'inbox_hash'>;
 
 export class ChatModel extends Model<Chat, ChatCreationAttributes> implements Chat {
   public id: number;
@@ -12,6 +11,7 @@ export class ChatModel extends Model<Chat, ChatCreationAttributes> implements Ch
   public last_message_id?: number;
   public admin_id: number;
   public receiver_id: number;
+  public inbox_hash: string;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -45,6 +45,10 @@ export default function (sequelize: Sequelize): typeof ChatModel {
         allowNull: false,
         type: DataTypes.INTEGER,
       },
+      inbox_hash: {
+        allowNull: false,
+        type: DataTypes.STRING,
+      },
     },
 
     {
@@ -63,9 +67,5 @@ export default function (sequelize: Sequelize): typeof ChatModel {
     as: 'owner',
   });
 
-  // ChatModel.hasMany(MessageModel, {
-  //   foreignKey: 'chat_id',
-  //   as: 'messages',
-  // });
   return ChatModel;
 }

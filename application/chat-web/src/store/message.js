@@ -5,21 +5,26 @@ export default {
 
   state: {
     chats: [],
-    message: []
+    messages: [],
+    chatData: ''
   },
 
   getters: {
     chats: state => state.chats,
-    message: state => state.message,
+    messages: state => state.messages,
+    chatData: state => state.chatData,
   },
 
   mutations: {
     setChats(state, chats) {
       state.chats = chats;
     },
-    setMessage(state, message){
-        state.message = message;
-    }
+    setMessages(state, messages){
+        state.messages = messages;
+    },
+    setChatData(state, chatData){
+      state.chatData = chatData;
+  }
   },
 
   actions: {
@@ -34,20 +39,20 @@ export default {
           console.log(e);
         });
     },
-    addNewChat(_,payload){
-      axios
-        .post("http://localhost:5000/chat/create", payload)
-        .then(response => {
-          console.log(response);
-          alert("User added successfully.")
-        })
-        .catch(e => {
-          console.log(e);
-        });
-    },
+    // addNewChat(_,payload){
+    //   axios
+    //     .post("http://localhost:5000/chat/create", payload)
+    //     .then(response => {
+    //       console.log(response);
+    //       alert("User added successfully.")
+    //     })
+    //     .catch(e => {
+    //       console.log(e);
+    //     });
+    // },
     getAllMessages({ commit }) {
       axios
-        .get("http://localhost:5000/chat/messages")
+        .get("http://localhost:5000/chat/all")
         .then(response => {
           commit("setChats", response.data.data);
         })
@@ -60,7 +65,8 @@ export default {
         axios
         .get("http://localhost:5000/chat/"+receiverId)
         .then(response => {
-          commit("setMessage", response.data.data);
+          commit("setMessages", response.data.data.messages);
+          commit("setChatData", response.data.data.chatData);
         })
         .catch(e => {
           console.log(e);

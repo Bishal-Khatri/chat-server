@@ -13,9 +13,10 @@ import { DB } from '@database';
 import { Routes } from '@interfaces/routes.interface';
 import { ErrorMiddleware } from '@middlewares/error.middleware';
 import { logger, stream } from '@utils/logger';
-import { Server, Socket } from 'socket.io';
-import { ClientToServerEvents, ServerToClientEvents, UserOnlineEvent } from './interfaces/socket.io.interface';
+import { Server } from 'socket.io';
+import { ClientToServerEvents, ServerToClientEvents } from './interfaces/socket.io.interface';
 import { ChatController } from './controllers/chat.controller';
+import { initializeSocketIO } from './socket';
 
 export class App {
   public app: express.Application;
@@ -30,11 +31,17 @@ export class App {
     this.env = NODE_ENV || 'development';
     this.port = PORT || 3000;
 
+    const io = new Server<ClientToServerEvents, ServerToClientEvents>({
+      cors: { origin: ORIGIN, credentials: CREDENTIALS },
+    });
+    io.listen(3000);
+
+    initializeSocketIO(io);
+
     this.connectToDatabase();
     this.initializeMiddlewares();
     this.initializeRoutes(routes);
     this.initializeSwagger();
-    this.initializeSocketIO();
     this.initializeErrorHandling();
   }
 
@@ -49,26 +56,6 @@ export class App {
 
   public getServer() {
     return this.app;
-  }
-  private async initializeSocketIO() {
-    const io = new Server<ClientToServerEvents, ServerToClientEvents>({});
-
-    io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents, UserOnlineEvent>) => {
-      // Set user online
-      io.sockets.emit('online', socket.id);
-
-      socket.on('clientMessage', data => {
-        socket.join(data.room_id);
-        socket.to(data.room_id).emit('serverMessage', data);
-        // if (data.room_id) {
-        //   // store to db
-        //   this.chatController.saveMessage(data);
-        // }
-        // socket.broadcast.emit('serverMessage', data);
-      });
-    });
-
-    io.listen(3000);
   }
 
   private async connectToDatabase() {

@@ -29,6 +29,10 @@ module.exports = {
         type: Sequelize.INTEGER,
         references: { model: 'users', key: 'id' },
       },
+      inbox_hash: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,

@@ -5,4 +5,5 @@ export interface Chat {
   last_message_id?: number;
   admin_id: number;
   receiver_id: number;
+  inbox_hash: string;
 }

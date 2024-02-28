@@ -10,9 +10,9 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      chat_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'chats', key: 'id' },
+      inbox_hash: {
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       sender_id: {
         type: Sequelize.INTEGER,

@@ -15,9 +15,12 @@ export class ChatRoute implements Routes {
   }
 
   private initializeRoutes() {
-    this.router.get('/chat/messages', AuthMiddleware, this.chatController.getAllMessages);
-    this.router.get('/chat/:receiverId', AuthMiddleware, this.chatController.getChat);
     this.router.post('/chat/create', AuthMiddleware, this.chatController.createChat);
+
+    this.router.get('/chat/all', AuthMiddleware, this.chatController.getAllChats);
+
+    this.router.get('/chat/:receiverId', AuthMiddleware, this.chatController.getMessage);
+
     this.router.post('/chat/send', AuthMiddleware, this.chatController.sendMessage);
   }
 }

@@ -12,152 +12,19 @@ import { FindOptions, WhereOptions } from 'sequelize';
 import { Op } from 'sequelize';
 import { emitSocketEvent } from '@/socket';
 import { MessageModel } from '@/models/message.model';
+import { ChatEvent } from '@/constants';
+import { v4 as uuidv4 } from 'uuid';
 
 export class ChatController {
   public chat = Container.get(ChatService);
 
-  public createChat = async (req: RequestWithUser, res: Response, next: NextFunction) => {
+  public getAllChats = async (req: RequestWithUser, res: Response, next: NextFunction) => {
     try {
-      const { email } = req.body;
+      const authUser: User = req.user;
 
-      // Find receiver by ID
-      const receiver = await UserModel.findOne({
-        where: {
-          email: email,
-        },
-      });
-
-      if (!receiver) {
-        throw new HttpException(404, 'User does not exist');
-      }
-      const userData: User = req.user;
-
-      if (receiver.id === userData.id) {
-        throw new HttpException(404, 'You cannot chat with yourself');
-      }
-
-      /*
-       * Create new chat record between auth user and receiver if not available
-       */
-      const chatData = await ChatModel.findOrCreate({
-        where: {
-          [Op.or]: [
-            {
-              admin_id: userData.id,
-              receiver_id: receiver.id,
-            },
-            {
-              receiver_id: userData.id,
-              admin_id: receiver.id,
-            },
-          ],
-        },
-        include: [
-          {
-            model: MessageModel,
-            as: 'message',
-          },
-          {
-            model: UserModel,
-            as: 'receiver',
-          },
-        ],
-        defaults: {
-          name: 'Chat',
-          admin_id: userData.id,
-          receiver_id: receiver.id,
-          is_group: false,
-        },
-      });
-
-      emitSocketEvent(req, userData.id, 'newChat', []);
-
-      res.status(201).json({
-        data: chatData,
-        message: 'newChat',
-      });
-    } catch (error) {
-      console.log(error);
-      next(error);
-    }
-  };
-
-  public getChat = async (req: RequestWithUser, res: Response, next: NextFunction) => {
-    try {
-      const { receiverId } = req.params;
-
-      // Find receiver by ID
-      const receiver = await UserModel.findByPk(receiverId);
-
-      if (!receiver) {
-        throw new HttpException(404, 'Receiver does not exist');
-      }
-      const userData: User = req.user;
-
-      if (receiver.id === userData.id) {
-        throw new HttpException(404, 'You cannot chat with yourself');
-      }
-
-      /*
-       * Create new chat record between auth user and receiver if not available
-       */
-      const chatData = await ChatModel.findOrCreate({
-        where: {
-          [Op.or]: [
-            {
-              admin_id: userData.id,
-              receiver_id: receiver.id,
-            },
-            {
-              receiver_id: userData.id,
-              admin_id: receiver.id,
-            },
-          ],
-        },
-        include: [
-          {
-            model: MessageModel,
-            as: 'message',
-          },
-          {
-            model: UserModel,
-            as: 'receiver',
-          },
-        ],
-        defaults: {
-          name: 'Chat',
-          admin_id: userData.id,
-          receiver_id: receiver.id,
-          is_group: false,
-        },
-      });
-
-      emitSocketEvent(req, userData.id, 'newChat', []);
-
-      res.status(201).json({
-        data: chatData,
-        message: 'save',
-      });
-    } catch (error) {
-      console.log(error);
-      next(error);
-    }
-  };
-
-  public getAllMessages = async (req: RequestWithUser, res: Response, next: NextFunction) => {
-    try {
-      const userData: User = req.user;
-
-      const messages = await ChatModel.findAll({
-        where: {
-          [Op.or]: [
-            {
-              admin_id: userData.id,
-            },
-            {
-              receiver_id: userData.id,
-            },
-          ],
+      const allChats = await ChatModel.findAll({
+        where:{
+          admin_id: authUser.id,
         },
         include: [
           {
@@ -172,9 +39,136 @@ export class ChatController {
       });
 
       res.status(201).json({
-        data: messages,
-        message: 'save',
+        data: allChats,
+        message: 'allChatList',
       });
+
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  };
+
+  public createChat = async (req: RequestWithUser, res: Response, next: NextFunction) => {
+    try {
+      const { receiver_id } = req.body;
+
+      // Find receiver by ID
+      const receiver = await UserModel.findOne({
+        where: {
+          id: receiver_id,
+        },
+      });
+
+      if (!receiver) {
+        throw new HttpException(404, 'User does not exist');
+      }
+
+      const authUser: User = req.user;
+
+      if (receiver.id === authUser.id) {
+        throw new HttpException(404, 'You cannot chat with yourself');
+      }
+
+      /*
+       * Find chat record from chats table
+       */
+
+      let chatData = await ChatModel.findOne({
+        where: {
+          admin_id: authUser.id,
+          receiver_id: receiver.id
+        }
+      });
+
+       /*
+       * Create two new chat record between auth user and receiver if not available
+       */
+      if(!chatData){
+        // Generate Inbox Hash
+        const inboxHash = uuidv4();
+
+        chatData = await ChatModel.create({
+          name: 'Chat',
+          admin_id: authUser.id,
+          receiver_id: receiver.id,
+          is_group: false,
+          inbox_hash: inboxHash
+        });
+
+        await ChatModel.create({
+          name: 'Chat',
+          admin_id: receiver.id,
+          receiver_id: authUser.id,
+          is_group: false,
+          inbox_hash: inboxHash
+        });
+      }
+
+      // emitSocketEvent(req, userData.id, 'newChat', []);
+
+      res.status(201).json({
+        data: chatData,
+        message: 'newChatCreated',
+      });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  };
+
+  public getMessage = async (req: RequestWithUser, res: Response, next: NextFunction) => {
+    try {
+      const { receiverId } = req.params;
+
+      // Find receiver by ID
+      const receiver = await UserModel.findByPk(receiverId);
+
+      if (!receiver) {
+        throw new HttpException(404, 'Receiver does not exist');
+      }
+
+      const authUser: User = req.user;
+
+      if (receiver.id === authUser.id) {
+        throw new HttpException(404, 'You cannot chat with yourself');
+      }
+
+      /*
+       * Create new chat record between auth user and receiver if not available
+       */
+      const chatData = await ChatModel.findOne({
+        where: {
+          admin_id: authUser.id,
+          receiver_id: receiver.id,
+        },
+        include: [
+          {
+            model: UserModel,
+            as: 'receiver',
+          },
+        ],
+      });
+      // emitSocketEvent(
+      //   req,
+      //   authUser.id.toString(),
+      //   ChatEvent.NEW_CHAT_EVENT,
+      //   chatData
+      // );
+
+      const {inbox_hash} = chatData;
+
+      const messages = await MessageModel.findAll({
+        where: {
+          inbox_hash: inbox_hash
+        }
+      });
+
+      res.status(201).json({
+        data: {chatData: chatData, messages: messages},
+        message: 'success',
+      });
+      
     } catch (error) {
       console.log(error);
       next(error);
@@ -183,21 +177,23 @@ export class ChatController {
 
   public sendMessage = async (req: RequestWithUser, res: Response, next: NextFunction) => {
     try {
-      const userData: User = req.user;
-      const { message, chat } = req.body;
+      const authUser: User = req.user;
+
+      const { message, inbox_hash } = req.body;
 
       const messageData = await MessageModel.create({
         message: message,
-        chat_id: chat.id,
-        sender_id: userData.id,
+        inbox_hash: inbox_hash,
+        sender_id: authUser.id,
       });
 
-      emitSocketEvent(req, userData.id, 'newChat', []);
+      // emitSocketEvent(req, userData.id, 'newChat', []);
       
       res.status(201).json({
         data: messageData,
-        message: 'save',
+        message: 'messageSent',
       });
+
     } catch (error) {
       console.log(error);
       next(error);

@@ -31,6 +31,18 @@ export class UserController {
     }
   };
 
+  public getUserByEmail = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email } = req.body;
+
+      const findOneUserData: User = await this.user.findUserByEmail(email);
+
+      res.status(200).json({ data: findOneUserData, message: 'findOne' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userData: CreateUserDto = req.body;

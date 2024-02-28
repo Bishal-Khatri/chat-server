@@ -1,3 +1,4 @@
+
 <template>
   <div>
     <button
@@ -40,7 +41,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
 
-            Add New User
+            New Chat
           </button>
           <button
             @click.prevent="logout"
@@ -65,13 +66,13 @@
           class="fixed left-0 top-0 bg-black w-screen h-screen bg-opacity-50 justify-center items-center hidden opacity-0 transition-opacity duration-500"
         >
           <div class="bg-white rounded shadow-sm px-8 py-4 w-6/12">
-            <h2 class="text-center">Add new user</h2>
+            <h2 class="text-center">Find user by email address</h2>
             <div class="grid gap-6 mb-6">
               <div>
-                <label for="first_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"> Email address</label>
+                <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"> Email address</label>
                 <input
-                  type="text"
-                  id="first_name"
+                  type="email"
+                  id="email"
                   v-model="email"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="john@exaple.com"
@@ -79,10 +80,49 @@
                 />
               </div>
               <div class="gap-2 flex justify-between">
-                <button @click.prevent="newChat" class="w-40 bg-primary p-2 rounded block text-white shadow-md">Send Request</button>
+                <button @click.prevent="findUserByEmail" class="w-40 bg-primary p-2 rounded text-white shadow-md inline-flex ">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 me-2 text-center">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+</svg>
+Search</button>
                 <button @click.prevent="hideAddUser" class="w-40 bg-default p-2 rounded block shadow-md">Cancel</button>
               </div>
+              <div v-if="findUser">
+                  <div class="max-w-md w-full bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-4">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <img class="h-12 w-12 rounded-full object-cover" src="https://via.placeholder.com/150"
+                                    alt="Profile Picture">
+                            </div>
+                            <div class="ml-3">
+                                <h2 class="text-lg font-semibold text-gray-800">{{ findUser.name }}</h2>
+                                <p class="text-sm text-gray-600">{{ findUser.email }}</p>
+                                <button
+                              @click.prevent="newChat(findUser)"
+                              type="button"
+                              class="my-2 px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-primary rounded-md hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                            >
+                              <svg
+                                class="w-4 h-4 text-white me-2"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                              >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                              </svg>
+                              Add
+                            </button>
+                            </div>
+                            
+                        </div>
+                    </div>
+                  </div>
+              </div>
             </div>
+            
           </div>
         </div>
 
@@ -102,20 +142,21 @@
       </div>
     </aside>
 
-    <div class="p-4 sm:ml-64 flex flex-col h-screen" v-if="message.length > 0">
+    <div class="p-4 sm:ml-64 flex flex-col h-screen" v-if="chatData">
       <div class="grid">
         <div class="flex gap-2">
           <img class="w-10 h-10 rounded-full" src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="Jese image" />
           <div>
-            <h2 class="font-bold">{{ message[0].receiver.name ?? '-' }}</h2>
-            <h4>{{ message[0].receiver.email ?? '-' }}</h4>
+            <h2 class="font-bold">{{ chatData.receiver.name ?? '-' }}</h2>
+            <h4>{{ chatData.receiver.email ?? '-' }}</h4>
           </div>
         </div>
       </div>
 
       <div class="p-4 rounded-lg dark:border-gray-700 overflow-y-auto">
-        <div v-if="message.length > 0">
-          <div v-for="value in message[0].message" :key="value.id">
+        <div v-if="messages.length > 0">
+
+          <div v-for="value in messages" :key="value.id">
             <div class="flex items-end justify-end gap-2.5 mb-2" v-if="user.id === value.sender_id">
               <div class="bg-blue-50 flex flex-col w-full max-w-[320px] leading-1.5 p-4 border-gray-200 rounded-e-xl rounded-es-xl dark:bg-gray-700">
                 <p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">
@@ -239,8 +280,10 @@
 </template>
 
 <script>
+/* eslint-disable */
 import { mapGetters, mapActions } from 'vuex';
-
+import { ChatEventEnum } from '../constants.js';
+import axios from "axios";
 export default {
   name: 'Home',
 
@@ -248,17 +291,31 @@ export default {
     return {
       success: null,
       error: null,
+      searching_user: false,
       email: '',
       newMessage: '',
       currentChat: '',
+      findUser: ''
     };
   },
   mounted() {
     this.getAllMessages();
   },
+  sockets: {
+    connect() {
+      console.log('Connected to server');
+    },
+    disconnect() {
+      console.log('Disconnected from server');
+    },
+    'newChat'(msg) {
+      console.log(msg)
+      // this.message.push(msg);
+    }
+  },
   computed: {
     ...mapGetters('auth', ['user']),
-    ...mapGetters('message', ['chats', 'message']),
+    ...mapGetters('message', ['chats', 'messages', 'chatData']),
   },
 
   methods: {
@@ -284,24 +341,52 @@ export default {
       }, 500);
     },
 
-    async newChat() {
+    async findUserByEmail() {
+      this.searching_user = true;
       const formData = {
         email: this.email,
       };
-      await this.addNewChat(formData);
+      const findUser = await axios.post("http://localhost:5000/users/find/email", formData).then(response => {
+        this.findUser = response.data.data;
+          console.log(response);
+        })
+        .catch(e => {
+          alert("User not found.")
+          console.log(e);
+        });
+        this.searching_user = false;
+      // this.getAllMessages();
+      // this.hideAddUser();
+      this.$socket.emit(ChatEventEnum.NEW_CHAT_EVENT, this.message);
+    },
+
+
+    async newChat(findUser) {
+      const formData = {
+        receiver_id: findUser.id,
+      };
+      const newChat = await axios.post("http://localhost:5000/chat/create", formData).then(response => {
+        alert("New chat created")
+        })
+        .catch(e => {
+          alert("User not found.")
+          console.log(e);
+        });
       this.getAllMessages();
       this.hideAddUser();
+      this.$socket.emit(ChatEventEnum.NEW_CHAT_EVENT, this.message);
     },
 
     async sendMessage() {
       if (this.newMessage) {
         const formData = {
-          chat: this.currentChat,
+          inbox_hash: this.chatData.inbox_hash,
           message: this.newMessage,
         };
         await this.send(formData);
+        // this.$socket.emit(ChatEventEnum.NEW_CHAT_EVENT, this.message);
         this.newMessage = '';
-        this.getMessage(this.currentChat.receiver.id);
+        // this.getMessage(this.currentChat.receiver.id);
       }
     },
 
@@ -317,9 +402,11 @@ export default {
         });
     },
 
-    getChat(chat) {
+    async getChat(chat) {
       this.currentChat = chat;
-      this.getMessage(chat.receiver.id);
+      await this.getMessage(chat.receiver.id);
+
+      this.$socket.emit(ChatEventEnum.JOIN_CHAT_EVENT, this.chatData.inbox_hash);
     },
 
     logout() {

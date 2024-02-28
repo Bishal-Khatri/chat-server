@@ -1,6 +1,6 @@
 export interface Message {
   id: number;
-  chat_id: number;
+  inbox_hash: string;
   sender_id: number;
   message: string;
 }

@@ -19,6 +19,17 @@ export class UserService {
     return findUser;
   }
 
+  public async findUserByEmail(email: string): Promise<User> {
+    const findUser: User = await DB.Users.findOne({
+      where: {
+        email: email,
+      },
+    });
+    if (!findUser) throw new HttpException(409, "User doesn't exist");
+
+    return findUser;
+  }
+
   public async createUser(userData: CreateUserDto): Promise<User> {
     const findUser: User = await DB.Users.findOne({ where: { email: userData.email } });
     if (findUser) throw new HttpException(409, `This email ${userData.email} already exists`);
