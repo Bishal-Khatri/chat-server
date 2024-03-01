@@ -1,4 +1,4 @@
-export const ChatEventEnum = Object.freeze({
+export const ChatEvent = Object.freeze({
   // ? once user is ready to go
   CONNECTED_EVENT: "connected",
   // ? when user gets disconnected

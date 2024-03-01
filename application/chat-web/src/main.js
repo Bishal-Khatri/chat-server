@@ -4,15 +4,8 @@ import router from "./router";
 import store from "./store";
 import axios from "axios";
 import './index.css'
-import VueSocketIO from 'vue-socket.io';
-import SocketIO from 'socket.io-client'
 
 Vue.config.productionTip = false;
-
-Vue.use(new VueSocketIO({
-  connection: SocketIO('ws://localhost:3000', ),
-  
-}));
 
 axios.interceptors.response.use(
   response => response,

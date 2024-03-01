@@ -149,12 +149,6 @@ export class ChatController {
           },
         ],
       });
-      // emitSocketEvent(
-      //   req,
-      //   authUser.id.toString(),
-      //   ChatEvent.NEW_CHAT_EVENT,
-      //   chatData
-      // );
 
       const {inbox_hash} = chatData;
 
@@ -187,11 +181,19 @@ export class ChatController {
         sender_id: authUser.id,
       });
 
-      // emitSocketEvent(req, userData.id, 'newChat', []);
+      // Find receiver
+      const chatData = await ChatModel.findOne({
+        where: {
+          inbox_hash: inbox_hash,
+          admin_id: authUser.id
+        }
+      });
+
+      emitSocketEvent(req, chatData.receiver_id, ChatEvent.MESSAGE_RECEIVED_EVENT, messageData);
       
       res.status(201).json({
         data: messageData,
-        message: 'messageSent',
+        message: 'message sent',
       });
 
     } catch (error) {

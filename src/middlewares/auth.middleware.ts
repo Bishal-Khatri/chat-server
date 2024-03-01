@@ -6,12 +6,8 @@ import { HttpException } from '@exceptions/httpException';
 import { DataStoredInToken, RequestWithUser } from '@interfaces/auth.interface';
 
 const getAuthorization = req => {
-  const coockie = req.cookies['Authorization'];
-  if (coockie) return coockie;
-
   const header = req.header('Authorization');
   if (header) return header.split('Bearer ')[1];
-
   return null;
 };
 

@@ -1,5 +1,4 @@
 import { compare, hash } from 'bcrypt';
-import { sign } from 'jsonwebtoken';
 import { Service } from 'typedi';
 import { SECRET_KEY } from '@config';
 import { DB } from '@database';
@@ -7,14 +6,15 @@ import { CreateUserDto, LoginUserDto } from '@dtos/users.dto';
 import { HttpException } from '@/exceptions/httpException';
 import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
+import jwt from 'jsonwebtoken';
 
 const createToken = (user: User): TokenData => {
   const dataStoredInToken: DataStoredInToken = { id: user.id };
   const expiresIn: number = 60 * 60;
-
+  const token = jwt.sign(dataStoredInToken, SECRET_KEY, { expiresIn: expiresIn });
   return {
     expiresIn,
-    token: sign(dataStoredInToken, SECRET_KEY, { expiresIn }),
+    token: token,
   };
 };
 
@@ -36,7 +36,7 @@ export class AuthService {
     return createUserData;
   }
 
-  public async login(userData: LoginUserDto): Promise<{ tokenData: TokenData; cookie: string; findUser: User }> {
+  public async login(userData: LoginUserDto): Promise<{ tokenData: TokenData; findUser: User }> {
     const findUser: User = await DB.Users.findOne({ where: { email: userData.email } });
 
     if (!findUser) {
@@ -50,9 +50,9 @@ export class AuthService {
     }
 
     const tokenData = createToken(findUser);
-    const cookie = createCookie(tokenData);
+    // const cookie = createCookie(tokenData);
 
-    return { tokenData, cookie, findUser };
+    return { tokenData, findUser };
   }
 
   public async logout(userData: User): Promise<User> {

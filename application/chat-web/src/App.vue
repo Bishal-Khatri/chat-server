@@ -7,13 +7,19 @@
 </template>
 
 <script>
+/* eslint-disable */
 import { mapGetters, mapActions } from "vuex";
-
+import SocketioService from './socketio.service.js';
 export default {
   computed: {
     ...mapGetters("auth", ["user"])
   },
-
+  created() {
+    SocketioService.setupSocketConnection();
+  },
+  beforeUnmount() {
+    SocketioService.disconnect();
+  },
   mounted() {
     if (localStorage.getItem("authToken")) {
       this.getUserData();

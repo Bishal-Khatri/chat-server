@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
 import { HttpException } from "@/exceptions/httpException";
 import { UserModel } from "@/models/user.model";
-import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import { ChatEvent } from '@/constants'
+import { SECRET_KEY } from '@config';
 
 /**
  * @description This function is responsible to allow user to join the chat represented by chatId (chatId). event happens when user switches between the chats
@@ -41,34 +41,23 @@ const mountParticipantStoppedTypingEvent = (socket) => {
 
 
 const initializeSocketIO = (io) => {
-    global.io = io;
     return io.on("connection", async (socket) => {
-      console.log(socket)
+      console.log("User Connected");
       try {
-        // parse the cookies from the handshake headers (This is only possible if client has `withCredentials: true`)
-        const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
-  
-        let token = cookies?.accessToken; // get the accessToken
-  
+        const { token } = socket.handshake.auth;
+
         if (!token) {
-          // If there is no access token in cookies. Check inside the handshake auth
-          token = socket.handshake.auth?.token;
-        }
-  
-        if (!token) {
-          // Token is required for the socket to work
           throw new HttpException(403, "Un-authorized handshake. Token is missing");
         }
         
-        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET); // decode the token
+        const decodedToken = jwt.verify(token, SECRET_KEY);
   
         const user = await UserModel.findByPk(decodedToken?.id);
   
-        // retrieve the user
         if (!user) {
             throw new HttpException(403, "Un-authorized handshake. Token is invalid");
         }
-        socket.user = user; // mount te user object to the socket
+        socket.user = user;
         
         // We are creating a room with user id so that if user is joined but does not have any active chat going on.
         // still we want to emit some socket events to the user.
@@ -82,13 +71,15 @@ const initializeSocketIO = (io) => {
         mountParticipantTypingEvent(socket);
         mountParticipantStoppedTypingEvent(socket);
   
-        socket.on(ChatEvent.DISCONNECT_EVENT, () => {
-          console.log("user has disconnected 🚫. userId: " + socket.user?._id);
+        socket.on('disconnect', () => {
+          console.log("user has disconnected 🚫");
           if (socket.user?.id) {
             socket.leave(socket.user.id);
           }
         });
+
       } catch (error) {
+        console.log('SocketError: '+error.message)
         socket.emit(
           ChatEvent.SOCKET_ERROR_EVENT,
           error?.message || "Something went wrong while connecting to the socket."
@@ -106,7 +97,7 @@ const initializeSocketIO = (io) => {
    * @description Utility function responsible to abstract the logic of socket emission via the io instance
    */
   const emitSocketEvent = (req, roomId, event, payload) => {
-    global.io.in(roomId).emit(event, payload);
+    req.app.get("io").in(roomId.toString()).emit(event, payload);
   };
   
   export { initializeSocketIO, emitSocketEvent };

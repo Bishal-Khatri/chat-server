@@ -127,8 +127,8 @@ Search</button>
         </div>
 
         <ul class="space-y-2 font-medium pt-2">
-          <li v-for="chat in chats" :key="chat.id" @click.prevent="getChat(chat)">
-            <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+          <li v-for="chat in chats" :key="chat.id" @click.prevent="getChat(chat)" :class="chat.receiver_id === currentChat.receiver_id ? 'active' : ''">
+            <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white group">
               <div class="relative">
                 <img class="w-10 h-10 rounded-full" src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="" />
                 <span
@@ -153,10 +153,9 @@ Search</button>
         </div>
       </div>
 
-      <div class="p-4 rounded-lg dark:border-gray-700 overflow-y-auto">
-        <div v-if="messages.length > 0">
-
-          <div v-for="value in messages" :key="value.id">
+      <div class="p-4 rounded-lg dark:border-gray-700 overflow-y-auto" style="min-height: 80vh;" >
+        <div v-if="messages.length > 0" id="conversations">
+          <div v-for="value in messages" :key="value.id" ref="">
             <div class="flex items-end justify-end gap-2.5 mb-2" v-if="user.id === value.sender_id">
               <div class="bg-blue-50 flex flex-col w-full max-w-[320px] leading-1.5 p-4 border-gray-200 rounded-e-xl rounded-es-xl dark:bg-gray-700">
                 <p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">
@@ -282,8 +281,9 @@ Search</button>
 <script>
 /* eslint-disable */
 import { mapGetters, mapActions } from 'vuex';
-import { ChatEventEnum } from '../constants.js';
+import { ChatEvent } from '../constants.js';
 import axios from "axios";
+import Vue from 'vue'
 export default {
   name: 'Home',
 
@@ -298,30 +298,30 @@ export default {
       findUser: ''
     };
   },
-  mounted() {
-    this.getAllMessages();
-  },
-  sockets: {
-    connect() {
-      console.log('Connected to server');
-    },
-    disconnect() {
-      console.log('Disconnected from server');
-    },
-    'newChat'(msg) {
-      console.log(msg)
-      // this.message.push(msg);
-    }
+  async mounted() {
+    await this.getAllMessages();
+    this.scrollToBottom()
+    this.$socket.on(ChatEvent.MESSAGE_RECEIVED_EVENT, (payload) => {
+      this.messages.push(payload);
+      this.scrollToBottom()
+    });
   },
   computed: {
     ...mapGetters('auth', ['user']),
     ...mapGetters('message', ['chats', 'messages', 'chatData']),
   },
-
   methods: {
     ...mapActions('auth', ['sendLogoutRequest', 'sendVerifyResendRequest']),
     ...mapActions('message', ['getAllMessages', 'getMessage', 'addNewChat', 'send']),
 
+    scrollToBottom() {
+      setTimeout(() => {
+        const element = this.$el.querySelector("#conversations");
+          if(element && element.lastElementChild !== null){
+            element.lastElementChild.scrollIntoView({behavior: 'smooth'})
+          }
+        }, 500);
+    },
     showAddUser() {
       let dialog = document.getElementById('add-user-dialog');
       dialog.classList.remove('hidden');
@@ -348,16 +348,16 @@ export default {
       };
       const findUser = await axios.post("http://localhost:5000/users/find/email", formData).then(response => {
         this.findUser = response.data.data;
-          console.log(response);
+          // console.log(response);
         })
         .catch(e => {
           alert("User not found.")
-          console.log(e);
+          // console.log(e);
         });
         this.searching_user = false;
       // this.getAllMessages();
       // this.hideAddUser();
-      this.$socket.emit(ChatEventEnum.NEW_CHAT_EVENT, this.message);
+      this.$socket.emit(ChatEvent.NEW_CHAT_EVENT, this.message);
     },
 
 
@@ -370,11 +370,11 @@ export default {
         })
         .catch(e => {
           alert("User not found.")
-          console.log(e);
+          // console.log(e);
         });
       this.getAllMessages();
       this.hideAddUser();
-      this.$socket.emit(ChatEventEnum.NEW_CHAT_EVENT, this.message);
+      this.$socket.emit(ChatEvent.NEW_CHAT_EVENT, this.message);
     },
 
     async sendMessage() {
@@ -384,9 +384,10 @@ export default {
           message: this.newMessage,
         };
         await this.send(formData);
-        // this.$socket.emit(ChatEventEnum.NEW_CHAT_EVENT, this.message);
+        this.$socket.emit(ChatEvent.NEW_CHAT_EVENT, this.newMessage);
         this.newMessage = '';
-        // this.getMessage(this.currentChat.receiver.id);
+        this.getMessage(this.currentChat.receiver.id);
+        this.scrollToBottom();
       }
     },
 
@@ -405,8 +406,8 @@ export default {
     async getChat(chat) {
       this.currentChat = chat;
       await this.getMessage(chat.receiver.id);
-
-      this.$socket.emit(ChatEventEnum.JOIN_CHAT_EVENT, this.chatData.inbox_hash);
+      this.scrollToBottom();
+      this.$socket.emit(ChatEvent.JOIN_CHAT_EVENT, this.chatData.inbox_hash);
     },
 
     logout() {
@@ -432,5 +433,13 @@ export default {
 }
 a {
   text-decoration: none;
+}
+.active{
+  background-color: lightblue;
+  border-radius: 5px;
+}
+.active:hover{
+  background-color: lightblue;
+  border-radius: 5px;
 }
 </style>

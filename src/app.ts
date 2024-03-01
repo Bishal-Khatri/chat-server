@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 import compression from 'compression';
-import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
@@ -31,13 +30,6 @@ export class App {
     this.env = NODE_ENV || 'development';
     this.port = PORT || 3000;
 
-    const io = new Server<ClientToServerEvents, ServerToClientEvents>({
-      cors: { origin: ORIGIN, credentials: CREDENTIALS },
-    });
-    io.listen(3000);
-
-    initializeSocketIO(io);
-
     this.connectToDatabase();
     this.initializeMiddlewares();
     this.initializeRoutes(routes);
@@ -46,12 +38,18 @@ export class App {
   }
 
   public listen() {
-    this.app.listen(this.port, () => {
-      logger.info(`=================================`);
-      logger.info(`======= ENV: ${this.env} =======`);
-      logger.info(`🚀 App listening on the port ${this.port}`);
-      logger.info(`=================================`);
+    const httpServer = this.app.listen(this.port, () => {
+      logger.info(`App listening on the port: ${this.port}`);
     });
+
+    const io = new Server<ClientToServerEvents, ServerToClientEvents>({
+      cors: { origin: ORIGIN, credentials: CREDENTIALS },
+    });
+
+    io.listen(httpServer);
+    initializeSocketIO(io);
+
+    this.app.set('io', io);
   }
 
   public getServer() {
@@ -70,7 +68,6 @@ export class App {
     this.app.use(compression());
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
-    this.app.use(cookieParser());
   }
 
   private initializeRoutes(routes: Routes[]) {
