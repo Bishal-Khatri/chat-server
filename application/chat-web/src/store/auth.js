@@ -47,6 +47,7 @@ export default {
       axios.post("http://localhost:5000/logout").then(() => {
         commit("setUserData", null);
         localStorage.removeItem("authToken");
+        this.$router.push({ name: "Login" });
       });
     },
 

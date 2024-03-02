@@ -410,9 +410,8 @@ export default {
       this.$socket.emit(ChatEvent.JOIN_CHAT_EVENT, this.chatData.inbox_hash);
     },
 
-    logout() {
-      this.sendLogoutRequest();
-      this.$router.push('/');
+    async logout() {
+      await this.sendLogoutRequest();
     },
   },
 };
