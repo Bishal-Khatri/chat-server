@@ -1,5 +1,5 @@
 /* eslint-disable */
-import Vue from 'vue'
+import vue from 'vue'
 import { io } from 'socket.io-client';
 
 class SocketioService {

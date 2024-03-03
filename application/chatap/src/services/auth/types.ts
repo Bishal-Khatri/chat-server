@@ -9,6 +9,11 @@ export type LoginResponse = {
   message: string;
 };
 
+export type AuthUserResponse = {
+  data: User;
+  message: string;
+}
+
 type Token = {
   expiresIn: number;
   token: string;

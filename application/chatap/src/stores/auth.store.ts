@@ -1,38 +1,37 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
-import type { LoginInput, User } from '@/services/auth/types';
 import instance from '@/services/api';
+import type { ChatListResponse } from '@/services/chat/types';
+import { getChatList, getMessage } from '@/services/chat';
+import type { LoginInput, User } from '@/services/auth/types';
+import { getAuthUser, login } from '@/services/auth';
 import router from '@/router';
 
-export const useAuthStore = defineStore('auth', () => {
-  const userData = ref(null);
+export const useAuthStore = defineStore('auth', {
+  state: () => ({
+    user: {} as User,
+  }),
 
-  function setUserData(userData: User | null) {
-    userData = userData;
-  }
-
-  async function dispatchLoginRequest(input: LoginInput): Promise<null> {
-    try {
-      const response = await instance.post('/login', input);
+  getters: {
+    authUser(state) {
+      return state.user
+    },
+  },
+  actions: {
+    async dispatchLoginRequest(input: LoginInput) {
+      const response = await login(input);
       localStorage.setItem("authToken", response.data.token.token);
-      setUserData(response.data)
+      this.user = response.data.data
       router.replace({name: 'home'})
-    } catch (error) {
-      console.log(error)
+    },
+
+    async dispatchGetAuthUserData(){
+      const response = await getAuthUser();
+      this.user = response.data.data;
+    },
+
+    async logout(){
+      localStorage.removeItem("authToken");
     }
-    return null;
-  }
-
-  async function dispatchGetUserData():Promise<null> {
-    try {
-        const response = await instance.get('/user');
-        setUserData(response.data)
-        router.replace({name: 'home'})
-      } catch (error) {
-        console.log(error)
-      }
-      return null;
-  }
-
-  return { userData, dispatchLoginRequest, setUserData, dispatchGetUserData };
+  },
 });

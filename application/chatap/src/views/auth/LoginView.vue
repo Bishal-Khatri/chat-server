@@ -8,9 +8,7 @@ const details = reactive({ email: '', password: '' });
 const store = useAuthStore();
 
 onMounted(() => {
-  const store = useAuthStore();
-  store.dispatchGetUserData();
-  if (store.userData) {
+  if (localStorage.getItem('authToken')) {
     router.push({ name: 'home' });
   }
 });
