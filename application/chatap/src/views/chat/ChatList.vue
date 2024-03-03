@@ -1,10 +1,17 @@
 <script setup lang="ts">
+import type { User } from '@/services/auth/types';
+import { useAuthStore } from '@/stores/auth.store';
 import { useChatStore } from '@/stores/chat.store';
 import { onMounted, computed, ref, reactive } from 'vue';
 
 const store = useChatStore();
+const authStore = useAuthStore();
 const chats = computed(() => {
   return store.chatList;
+});
+
+const foundUser = computed(() => {
+  return authStore.findUser;
 });
 
 const email = ref('');
@@ -33,35 +40,18 @@ function hideAddUser() {
 
 function findUserByEmail() {
   const formData = {
-    email: email,
+    email: email.value!,
   };
-  // const findUser = await axios.post("http://localhost:5000/users/find/email", formData).then(response => {
-  //   this.findUser = response.data.data;
-  //     // console.log(response);
-  //   })
-  //   .catch(e => {
-  //     alert("User not found.")
-  //     // console.log(e);
-  //   });
-  // this.getAllMessages();
-  // this.hideAddUser();
-  // socket.emit(ChatEvent.NEW_CHAT_EVENT, this.message);
+  authStore.dispatchGetUserByEmail(formData);
 }
 
-async function newChat(findUser: any) {
+async function newChat(user: User) {
   const formData = {
-    receiver_id: findUser.id,
+    receiver_id: user.id,
   };
-  // const newChat = await axios.post("http://localhost:5000/chat/create", formData).then(response => {
-  //   alert("New chat created")
-  //   })
-  //   .catch(e => {
-  //     alert("User not found.")
-  //     // console.log(e);
-  //   });
-  // this.getAllMessages();
-  // this.hideAddUser();
-  // this.$socket.emit(ChatEvent.NEW_CHAT_EVENT, this.message);
+  await store.dispatchNewChat(formData);
+  store.dispatchGetChats();
+  hideAddUser()
 }
 </script>
 <template>
@@ -147,20 +137,20 @@ async function newChat(findUser: any) {
               required
             />
           </div>
-          <div v-if="findUser">
+          <div v-if="Object.keys(foundUser).length">
             <div class="w-full border rounded-md overflow-hidden">
               <div class="p-4">
                 <div class="flex justify-between">
                   <div class="flex space-x-4">
                   <img class="h-12 w-12 rounded-md object-cover" src="https://via.placeholder.com/150" alt="Profile Picture" />
                     <div>
-                      <h2 class="text-md font-semibold text-gray-800">{{ findUser.name ?? 'Not-Available' }}</h2>
-                      <p class="text-sm text-gray-600">{{ findUser.email ?? 'Not-Available' }}</p>
+                      <h2 class="text-md font-semibold text-gray-800">{{ foundUser.name ?? 'Not-Available' }}</h2>
+                      <p class="text-sm text-gray-600">{{ foundUser.email ?? 'Not-Available' }}</p>
                     </div>
                   </div>
 
                   <button
-                      @click.prevent="newChat(findUser)"
+                      @click.prevent="newChat(foundUser)"
                       type="button"
                       class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-primary rounded-md hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                     >

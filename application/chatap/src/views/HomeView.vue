@@ -22,7 +22,7 @@ async function initData() {
     <div class="flex h-screen">
       <SideNav />
       <ChatList />
-      <ChatRoom v-if="chatStore.messages.length" />
+      <ChatRoom v-if="Object.keys(chatStore.chatData).length" />
       <DefaultView v-else/>
     </div>
   </main>

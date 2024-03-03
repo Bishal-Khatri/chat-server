@@ -15,7 +15,9 @@
     "pinia": "^2.1.7",
     "socket.io-client": "^4.7.4",
     "vue": "^3.4.15",
-    "vue-router": "^4.2.5"
+    "vue-google-oauth2": "^1.5.10",
+    "vue-router": "^4.2.5",
+    "vue3-google-login": "^2.0.25"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.2",

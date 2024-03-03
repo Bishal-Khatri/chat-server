@@ -2,6 +2,7 @@
 import router from '@/router';
 import { useAuthStore } from '@/stores/auth.store';
 import { ref, reactive, computed, onMounted } from 'vue';
+import { googleSdkLoaded } from 'vue3-google-login';
 
 const details = reactive({ email: '', password: '' });
 
@@ -14,6 +15,35 @@ onMounted(() => {
 });
 function login() {
   store.dispatchLoginRequest(details);
+}
+
+function googleLogin() {
+  googleSdkLoaded(google => {
+    google.accounts.oauth2
+      .initCodeClient({
+        client_id: '198239904766-eijfbnkvcs5ni21o8ecncnt93feeklbv.apps.googleusercontent.com',
+        scope: 'email profile openid',
+        redirect_uri: 'http://localhost:4000/auth/callback',
+        callback: response => {
+          if (response.code) {
+            sendCodeToBackend(response.code);
+          }
+        },
+      })
+      .requestCode();
+  });
+}
+
+async function sendCodeToBackend(code: any) {
+  console.log(code)
+  try {
+    const payload = {
+      code,
+    };
+    await store.dispatchGoogleLoginRequest(payload);
+  } catch (error) {
+    console.error('Failed to send authorization code:', error);
+  }
 }
 </script>
 
@@ -57,7 +87,7 @@ function login() {
             <button class="hover:scale-[1.01] active:scale-[0.98] py-3 rounded-xl bg-violet-500 text-white text-lg font-bold" @click.prevent="login">
               Sign in
             </button>
-            <button class="hover:scale-[1.01] active:scale-[0.98] py-3 rounded-xl flex items-center justify-center gap-2 border-2 border-gray-100">
+            <button @click.prevent="googleLogin" class="hover:scale-[1.01] active:scale-[0.98] py-3 rounded-xl flex items-center justify-center gap-2 border-2 border-gray-100">
               <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="30" height="30" viewBox="0 0 48 48">
                 <path
                   fill="#FFC107"

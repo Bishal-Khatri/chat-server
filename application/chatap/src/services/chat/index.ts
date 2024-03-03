@@ -12,3 +12,7 @@ export async function getMessage(receiverId: number) {
 export async function sendMessage(payload: MessageInput) {
   return await instance.post<SendMessageResponse>("/chat/send", payload);
 }
+export async function addNewChat(payload: {receiver_id: number}) {
+  return await instance.post<SendMessageResponse>("/chat/create", payload);
+}
+

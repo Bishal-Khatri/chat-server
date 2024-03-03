@@ -14,6 +14,11 @@ export type AuthUserResponse = {
   message: string;
 }
 
+export type FindUserResponse = {
+  data: User;
+  message: string;
+}
+
 type Token = {
   expiresIn: number;
   token: string;
