@@ -41,8 +41,12 @@ export const useChatStore = defineStore('chat', {
     },
 
     async dispatchNewChat(payload: {receiver_id: number}){
-      const response = await addNewChat(payload);
-      return true;
+      try{
+        const response = await addNewChat(payload);
+        return true;
+      }catch(error: any){
+        alert(error.response.data.message);
+      }
     }
     
   },

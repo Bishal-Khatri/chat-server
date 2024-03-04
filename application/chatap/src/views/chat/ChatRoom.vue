@@ -13,7 +13,7 @@ let convDiv = ref();
 
 onMounted(async () => {
   scrollToBottom();
-  socket.on(ChatEvent.MESSAGE_RECEIVED_EVENT, payload => {
+  socket.on(ChatEvent.MESSAGE_RECEIVED_EVENT, (payload:any) => {
     chatStore.messages.push(payload);
     scrollToBottom();
     playNotification();
@@ -93,7 +93,7 @@ async function sendMessage() {
       <div class="mt-2" ref="convDiv">
         <div v-for="message in chatStore.messages">
           <div class="flex items-end justify-end mb-2" v-if="authStore.user && authStore.user.id === message.sender_id">
-            <div class="bg-teal-800 rounded-md p-2">
+            <div class="bg-green-800 rounded-md p-2">
               <p class="text-sm text-white">
                 {{ message.message }}
                 <span class="text-[8px] ml-4">{{ message.createdAt }}</span>

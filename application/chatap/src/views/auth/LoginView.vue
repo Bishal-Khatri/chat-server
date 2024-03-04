@@ -81,7 +81,7 @@ async function sendCodeToBackend(code: any) {
           </div>
           <div class="mt-2 flex">
             <p class="mr-2 text-gray-500">Don't have an account?</p>
-            <a href="/register"> Register Now</a>
+            <router-link to="/register"> Register Now</router-link>
           </div>
           <div class="mt-8 flex flex-col gap-y-4">
             <button class="hover:scale-[1.01] active:scale-[0.98] py-3 rounded-xl bg-violet-500 text-white text-lg font-bold" @click.prevent="login">
@@ -113,7 +113,6 @@ async function sendCodeToBackend(code: any) {
       </div>
     </div>
     <div class="hidden relative bg-gray-200 w-1/2 lg:flex h-full items-center justify-center">
-      <!-- <img class="w-1/2 rounded-lg" src="/images/chatap.png" alt=""> -->
       <div class="w-60 h-60 bg-gradient-to-tr from-violet-500 to-pink-500 rounded-full animate-spin" />
       <div class="w-full h-1/2 absolute bottom-0 bg-white/10 backdrop-blur-lg" />
     </div>

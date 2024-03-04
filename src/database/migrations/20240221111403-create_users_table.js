@@ -10,17 +10,33 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
+      profile_image: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       name: {
         type: Sequelize.STRING,
         allowNull: false,
       },
       email: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
+      },
+      phone: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       password: {
         type: Sequelize.STRING,
+        allowNull: true,
+      },
+      sign_in_method: {
+        type: Sequelize.INTEGER,
         allowNull: false,
+      },
+      google_id: {
+        type: Sequelize.TEXT,
+        allowNull: true,
       },
       created_at: {
         type: Sequelize.DATE,

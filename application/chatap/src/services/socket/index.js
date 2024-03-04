@@ -1,4 +1,3 @@
-/* eslint-disable */
 import vue from 'vue'
 import { io } from 'socket.io-client';
 

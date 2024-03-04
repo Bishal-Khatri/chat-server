@@ -1,8 +1,12 @@
-import type { LoginInput, LoginResponse, FindUserResponse , AuthUserResponse} from "./types";
+import type { LoginInput, LoginResponse, FindUserResponse , AuthUserResponse, RegisterInput} from "./types";
 import instance from "../api";
 
 export async function login(input: LoginInput) {
   return await instance.post<LoginResponse>("/login", input);
+}
+
+export async function register(input: RegisterInput) {
+  return await instance.post<LoginResponse>("/signup", input);
 }
 
 export async function googleLogin(payload: any) {

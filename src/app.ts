@@ -43,7 +43,7 @@ export class App {
     });
 
     const io = new Server<ClientToServerEvents, ServerToClientEvents>({
-      cors: { origin: ORIGIN, credentials: CREDENTIALS },
+      cors: { origin: JSON.parse(ORIGIN), credentials: CREDENTIALS },
     });
 
     io.listen(httpServer);
@@ -62,7 +62,7 @@ export class App {
 
   private initializeMiddlewares() {
     this.app.use(morgan(LOG_FORMAT, { stream }));
-    this.app.use(cors({ origin: ORIGIN, credentials: CREDENTIALS }));
+    this.app.use(cors({ origin: JSON.parse(ORIGIN), credentials: CREDENTIALS }));
     this.app.use(hpp());
     this.app.use(helmet());
     this.app.use(compression());

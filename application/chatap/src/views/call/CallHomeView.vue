@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth.store';
 import { onMounted, onBeforeUnmount } from 'vue';
-import ChatList from './chat/ChatList.vue';
-import ChatRoom from './chat/ChatRoom.vue';
-import SideNav from './includes/SideNav.vue';
 import { useChatStore } from '@/stores/chat.store';
 import { socket } from '@/socket';
-import DefaultView from './DefaultView.vue';
+import CallList from './CallList.vue';
+import SideNav from '../includes/SideNav.vue';
+import DefaultView from '../DefaultView.vue';
 
 const chatStore = useChatStore();
 const userStore = useAuthStore();
@@ -32,9 +31,8 @@ async function initData() {
   <main>
     <div class="flex h-screen">
       <SideNav />
-      <ChatList />
-      <ChatRoom v-if="Object.keys(chatStore.chatData).length" />
-      <DefaultView v-else/>
+      <CallList />
+      <DefaultView/>
     </div>
   </main>
-</template>./DefaultView.vue
+</template>

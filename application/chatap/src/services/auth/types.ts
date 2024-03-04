@@ -3,6 +3,12 @@ export type LoginInput = {
   password: string;
 };
 
+export type RegisterInput = {
+  name: string;
+  email: string;
+  password: string;
+};
+
 export type LoginResponse = {
   token: Token;
   data: User;
@@ -26,8 +32,10 @@ type Token = {
 
 export type User = {
   id: number;
+  profile_image: string;
   name: string;
   email: string;
+  phone: string;
   createdAt: string;
   updatedAt: string;
 };

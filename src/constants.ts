@@ -21,3 +21,9 @@ export const ChatEvent = Object.freeze({
   // ? when participant starts typing
   TYPING_EVENT: 'typing',
 });
+
+export const SignInMethod = Object.freeze({
+  EMAIL: 1,
+  PHONE: 2,
+  GOOGLE: 3,
+});

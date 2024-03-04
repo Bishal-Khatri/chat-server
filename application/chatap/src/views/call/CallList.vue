@@ -51,16 +51,16 @@ async function newChat(user: User) {
   };
   await store.dispatchNewChat(formData);
   store.dispatchGetChats();
-  hideAddUser();
+  hideAddUser()
 }
 </script>
 <template>
   <div class="flex h-screen">
-    <div class="w-64 bg-gray-800 border-r border-gray-900">
+    <div class="w-64 bg-gray-800 border-r border-gray-950">
       <!-- Logo/Header -->
       <div class="flex flex-col px-3 py-2 h-16">
         <div class="text-white text-md font-semibold flex justify-between">
-          <span class="py-2 px-3">Chats</span>
+          <span class="py-2 px-3">Calls</span>
           <div class="flex gap-2">
             <a href="#" @click.prevent="showAddUser" class="text-gray-300 hover:text-white bg-transparent hover:bg-gray-200/10 px-3 py-2 rounded-md">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-white">
@@ -86,7 +86,7 @@ async function newChat(user: User) {
           <div class="relative">
             <input
               type="text"
-              placeholder="Search or start new chat"
+              placeholder="Search or start new call"
               class="bg-gray-950/30 rounded-md px-4 py-2 pl-10 focus:outline-none focus:bg-gray-950 text-white"
             />
             <svg class="absolute left-3 top-3 w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -101,29 +101,17 @@ async function newChat(user: User) {
       </div>
       <nav class="mt-12">
         <div class="flex flex-col pl-2 pr-2">
-          <p v-if="chats.length == 0" class="text-gray-400 text-sm p-4">You don't have any active chats. Add user to start chatting.</p>
           <!-- Chat Card Links -->
           <a
-            v-else
             v-for="chat in chats"
             href="#"
             @click.prevent="store.dispatchGetMessage(chat)"
             class="flex items-center p-4 bg-transparent hover:bg-gray-200/5 rounded-md"
-            :class="chat.receiver_id === store.current_chat.receiver_id ? 'bg-green-800 hover:bg-green-700' : ''"
           >
-            <img v-if="chat.receiver.profile_image" :src="chat.receiver.profile_image" alt="User" class="w-10 h-10 rounded-full mr-4" />
-            <div v-else class="w-10 h-10 rounded-full mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-white">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-                />
-              </svg>
-            </div>
+            <img src="\src\assets\images\user.jpg" alt="User" class="w-12 h-12 rounded-full mr-4" />
             <div>
               <span class="text-white text-md font-semibold">{{ chat.receiver.name }}</span>
-              <p class="text-gray-300 text-sm">Hello dude. k xa?</p>
+              <p class="text-gray-500 text-sm">Hello dude. k xa?</p>
             </div>
           </a>
         </div>
@@ -136,7 +124,7 @@ async function newChat(user: User) {
       class="fixed left-0 top-0 bg-black w-screen h-screen bg-opacity-50 justify-center items-center hidden opacity-0 transition-opacity duration-500"
     >
       <div class="rounded bg-white shadow-sm px-6 pt-8 w-4/12">
-        <h1 class="text-lg font-bold text-center">Find user by email address</h1>
+        <h1 class="text-lg font-bold text-center ">Find user by email address</h1>
         <div class="grid gap-6 mb-6 mt-10">
           <div>
             <label for="email" class="block mb-2 text-sm font-medium"> Email address</label>
@@ -154,7 +142,7 @@ async function newChat(user: User) {
               <div class="p-4">
                 <div class="flex justify-between">
                   <div class="flex space-x-4">
-                    <img class="h-12 w-12 rounded-md object-cover" src="https://via.placeholder.com/150" alt="Profile Picture" />
+                  <img class="h-12 w-12 rounded-md object-cover" src="https://via.placeholder.com/150" alt="Profile Picture" />
                     <div>
                       <h2 class="text-md font-semibold text-gray-800">{{ foundUser.name ?? 'Not-Available' }}</h2>
                       <p class="text-sm text-gray-600">{{ foundUser.email ?? 'Not-Available' }}</p>
@@ -162,22 +150,22 @@ async function newChat(user: User) {
                   </div>
 
                   <button
-                    @click.prevent="newChat(foundUser)"
-                    type="button"
-                    class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-primary rounded-md hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                  >
-                    <svg
-                      class="w-4 h-4 text-white me-2"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
+                      @click.prevent="newChat(foundUser)"
+                      type="button"
+                      class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-primary rounded-md hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                     >
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Send Request
-                  </button>
+                      <svg
+                        class="w-4 h-4 text-white me-2"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                      Send Request
+                    </button>
                 </div>
               </div>
             </div>
