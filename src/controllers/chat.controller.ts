@@ -37,7 +37,7 @@ export class ChatController {
           },
         ],
       });
-
+      
       res.status(201).json({
         data: allChats,
         message: 'allChatList',
@@ -188,6 +188,9 @@ export class ChatController {
           admin_id: authUser.id
         }
       });
+
+      chatData.last_message = message.length < 20 ? message : message.substring(0, 20).trimEnd() + '...';
+      await chatData.save();
 
       emitSocketEvent(req, chatData.receiver_id, ChatEvent.MESSAGE_RECEIVED_EVENT, messageData);
       

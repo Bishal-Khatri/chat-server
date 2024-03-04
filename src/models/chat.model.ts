@@ -2,13 +2,13 @@ import { Sequelize, DataTypes, Model, Optional, BelongsTo } from 'sequelize';
 import { Chat } from '@/interfaces/chat.interface';
 import { UserModel } from './user.model';
 
-export type ChatCreationAttributes = Optional<Chat, 'id' | 'name' | 'is_group' | 'last_message_id' | 'admin_id' | 'receiver_id' | 'inbox_hash'>;
+export type ChatCreationAttributes = Optional<Chat, 'id' | 'name' | 'is_group' | 'last_message' | 'admin_id' | 'receiver_id' | 'inbox_hash'>;
 
 export class ChatModel extends Model<Chat, ChatCreationAttributes> implements Chat {
   public id: number;
   public name: string;
   public is_group: boolean;
-  public last_message_id?: number;
+  public last_message?: string;
   public admin_id: number;
   public receiver_id: number;
   public inbox_hash: string;
@@ -33,9 +33,9 @@ export default function (sequelize: Sequelize): typeof ChatModel {
         allowNull: false,
         type: DataTypes.BOOLEAN,
       },
-      last_message_id: {
+      last_message: {
         allowNull: true,
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
       },
       admin_id: {
         allowNull: false,

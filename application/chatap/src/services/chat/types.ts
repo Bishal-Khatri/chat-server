@@ -22,7 +22,7 @@ export type Chat = {
   id: number;
   name: string;
   is_group: number;
-  last_message_id: number;
+  last_message: string;
   admin_id: number;
   receiver_id: number;
   inbox_hash: string;

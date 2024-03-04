@@ -18,8 +18,9 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         allowNull: false,
       },
-      last_message_id: {
-        type: Sequelize.INTEGER,
+      last_message: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       admin_id: {
         type: Sequelize.INTEGER,

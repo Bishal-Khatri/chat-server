@@ -123,7 +123,7 @@ async function newChat(user: User) {
             </div>
             <div>
               <span class="text-white text-md font-semibold">{{ chat.receiver.name }}</span>
-              <p class="text-gray-300 text-sm">Hello dude. k xa?</p>
+              <p class="text-gray-300 text-sm">{{ chat.last_message }}</p>
             </div>
           </a>
         </div>

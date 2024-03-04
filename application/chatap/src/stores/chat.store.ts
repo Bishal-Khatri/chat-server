@@ -33,6 +33,12 @@ export const useChatStore = defineStore('chat', {
       const response = await getMessage(chat.receiver_id);
       this.chatData = response.data.data.chatData;
       this.messages = response.data.data.messages;
+
+      // replace chat data
+      let newList = [...new Map([...this.chats, this.chatData].map((item) => [item['id'], item])).values()];
+      this.chats = newList;
+      console.log(newList)
+
     },
 
     async dispatchSendMessage(newMessage: MessageInput){
