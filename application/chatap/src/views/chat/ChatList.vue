@@ -108,8 +108,8 @@ async function newChat(user: User) {
             v-for="chat in chats"
             href="#"
             @click.prevent="store.dispatchGetMessage(chat)"
-            class="flex items-center p-4 bg-transparent hover:bg-gray-200/5 rounded-md"
-            :class="chat.receiver_id === store.current_chat.receiver_id ? 'bg-green-800 hover:bg-green-700' : ''"
+            class="flex items-center p-4 rounded-md"
+            :class="(chat.receiver_id === store.current_chat.receiver_id) ? 'bg-green-800 hover:bg-green-700' : 'bg-transparent hover:bg-gray-200/5'"
           >
             <img v-if="chat.receiver.profile_image" :src="chat.receiver.profile_image" alt="User" class="w-10 h-10 rounded-full mr-4" />
             <div v-else class="w-10 h-10 rounded-full mr-4">

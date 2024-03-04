@@ -5,15 +5,29 @@ import { useChatStore } from '@/stores/chat.store';
 import { onMounted, ref, nextTick } from 'vue';
 import { ChatEvent } from '@/const';
 import { socket } from '@/socket';
+import EmojiPicker from 'vue3-emoji-picker';
+import 'vue3-emoji-picker/css';
+import moment from 'moment'
 
 const chatStore = useChatStore();
 const authStore = useAuthStore();
 let newMessage = ref('');
 let convDiv = ref();
 
+function onSelectEmoji(emoji: any) {
+  newMessage.value += emoji.i;
+  console.log({emoji})
+  console.log({newMessage})
+}
+
+function toggleEmoji() {
+  let card = document.querySelector('#emojiDropdown');
+  card?.classList.toggle('hidden');
+}
+
 onMounted(async () => {
   scrollToBottom();
-  socket.on(ChatEvent.MESSAGE_RECEIVED_EVENT, (payload:any) => {
+  socket.on(ChatEvent.MESSAGE_RECEIVED_EVENT, (payload: any) => {
     chatStore.messages.push(payload);
     scrollToBottom();
     playNotification();
@@ -47,6 +61,11 @@ async function sendMessage() {
     scrollToBottom();
   }
 }
+
+function formatDate(date){
+  return moment(date).format("MMM DD, hh:mm a");
+}
+
 </script>
 <template>
   <div class="bg-white rounded-lg w-full shadow-lg">
@@ -88,7 +107,7 @@ async function sendMessage() {
       </div>
     </nav>
     <!-- Chat messages -->
-    <div class="px-4 py-2 overflow-y-auto max-h-72 min-h-[86.1%]">
+    <div class="px-4 py-2 overflow-y-auto max-h-72 min-h-[86.1%] bg-center bg-cover bg-no-repeat bg-[url('/doodle.webp')]">
       <!-- Example chat messages -->
       <div class="mt-2" ref="convDiv">
         <div v-for="message in chatStore.messages">
@@ -96,7 +115,7 @@ async function sendMessage() {
             <div class="bg-green-800 rounded-md p-2">
               <p class="text-sm text-white">
                 {{ message.message }}
-                <span class="text-[8px] ml-4">{{ message.createdAt }}</span>
+                <span class="text-[8px] ml-4">{{ formatDate(message.createdAt) }}</span>
               </p>
             </div>
           </div>
@@ -105,7 +124,7 @@ async function sendMessage() {
             <div class="bg-gray-100 rounded-md p-2">
               <p class="text-sm">
                 {{ message.message }}
-                <span class="text-[8px] ml-4">{{ message.createdAt }}</span>
+                <span class="text-[8px] ml-4">{{ formatDate(message.createdAt) }}</span>
               </p>
             </div>
           </div>
@@ -114,14 +133,41 @@ async function sendMessage() {
       <!-- Add more chat messages here -->
     </div>
     <!-- Message input field -->
-
     <footer class="relative">
-      <div class="flex">
+      <div class="flex bg-gray-800 focus:border-0">
+        
+        <div class="relative inline-flex align-middle">
+          <a href="#" class="p-4 text-white ease-linear transition-all duration-150" @click.prevent="toggleEmoji">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z"
+            />
+          </svg>
+        </a>
+          <div
+            class="hidden absolute bottom-14 left-4 bg-white text-base z-50 float-start py-2 list-none text-left rounded shadow-lg mb-1"
+            style="min-width: 12rem"
+            id="emojiDropdown"
+          >
+          <EmojiPicker :native="true" @select="onSelectEmoji" />
+          </div>
+        </div>
+        <a href="#" class="p-4 text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13"
+            />
+          </svg>
+        </a>
         <input
           v-model="newMessage"
           @keyup.enter="sendMessage"
           type="text"
-          class="flex-1 p-4 border-0 text-white bg-gray-800 focus:border-0 focus:ring-0"
+          class="flex-1 p-4 border-0 rounded-md text-white focus:ring-0 bg-gray-800 outline outline-transparent focus:bg-gray-900"
           placeholder="Type a message..."
         />
       </div>

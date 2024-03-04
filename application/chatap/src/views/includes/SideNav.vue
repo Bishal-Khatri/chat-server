@@ -39,7 +39,7 @@ async function logout() {
       <router-link
         to="/call"
         :active-class="'bg-green-500 bg-opacity-50 hover:bg-green-400'"
-        :exact-active-class="'bg-red-100 bg-opacity-50 hover:bg-red-200'"
+        :exact-active-class="'bg-green-500 bg-opacity-50 hover:bg-green-400'"
         class="text-gray-300 hover:text-white bg-transparent hover:bg-gray-200/10 px-3 py-2 rounded-md"
       >
         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
