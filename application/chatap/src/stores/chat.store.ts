@@ -1,59 +1,64 @@
-import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
-import instance from '@/services/api';
-import type { Chat, ChatListResponse, Message, MessageInput } from '@/services/chat/types';
-import { getChatList, getMessage, sendMessage, addNewChat} from '@/services/chat';
+import type { Chat, Message, MessageInput } from '@/services/chat/types';
+import { getChatList, getMessage, sendMessage, addNewChat } from '@/services/chat';
 
 export const useChatStore = defineStore('chat', {
   state: () => ({
     chats: [] as Chat[],
     messages: [] as Message[],
     chatData: {} as Chat,
-    current_chat: {} as Chat
+    current_chat: {} as Chat,
   }),
   getters: {
     chatList(state) {
-      return state.chats
+      return state.chats;
     },
-    getMessages(state){
+    getMessages(state) {
       return state.messages;
     },
-    getCurrentChat(state){
+    getCurrentChat(state) {
       return state.current_chat;
-    }
+    },
   },
   actions: {
     async dispatchGetChats() {
       const response = await getChatList();
-      this.chats = response.data.data;
+      if (response) {
+        this.chats = response.data.data;
+      }
     },
 
-    async dispatchGetMessage(chat: Chat){
+    async dispatchGetMessage(chat: Chat) {
       this.current_chat = chat;
       const response = await getMessage(chat.receiver_id);
-      this.chatData = response.data.data.chatData;
-      this.messages = response.data.data.messages;
+      if (response) {
+        this.chatData = response.data.data.chatData;
+        this.messages = response.data.data.messages;
 
-      // replace chat data
-      let newList = [...new Map([...this.chats, this.chatData].map((item) => [item['id'], item])).values()];
-      this.chats = newList;
-      console.log(newList)
-
-    },
-
-    async dispatchSendMessage(newMessage: MessageInput){
-      const response = await sendMessage(newMessage);
-      return true;
-    },
-
-    async dispatchNewChat(payload: {receiver_id: number}){
-      try{
-        const response = await addNewChat(payload);
-        return true;
-      }catch(error: any){
-        alert(error.response.data.message);
+        // replace chat data
+        let newList = [...new Map([...this.chats, this.chatData].map(item => [item['id'], item])).values()];
+        this.chats = newList;
       }
-    }
-    
+    },
+
+    async dispatchSendMessage(newMessage: MessageInput) {
+      const response = await sendMessage(newMessage);
+      if (response) {
+        return true;
+      }
+      return false;
+    },
+
+    async dispatchNewChat(payload: { receiver_id: number }) {
+      try {
+        const response = await addNewChat(payload);
+        if (response) {
+          return true;
+        }
+        return false;
+      } catch (error: any) {
+        console.log(error.response.data.message);
+      }
+    },
   },
 });

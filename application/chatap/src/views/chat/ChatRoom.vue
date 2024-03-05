@@ -16,8 +16,6 @@ let convDiv = ref();
 
 function onSelectEmoji(emoji: any) {
   newMessage.value += emoji.i;
-  console.log({emoji})
-  console.log({newMessage})
 }
 
 function toggleEmoji() {

@@ -39,7 +39,11 @@ export class AuthService {
     const findUser: User = await DB.Users.findOne({ where: { email: userData.email } });
 
     if (!findUser) {
-      throw new HttpException(409, `This email ${userData.email} was not found`);
+      throw new HttpException(409, `This email was not found`);
+    }
+
+    if (findUser.sign_in_method !== SignInMethod.EMAIL) {
+      throw new HttpException(409, `This email was not registered via email and password.`);
     }
 
     const isPasswordMatching: boolean = await compare(userData.password, findUser.password);

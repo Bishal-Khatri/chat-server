@@ -35,7 +35,6 @@ function googleLogin() {
 }
 
 async function sendCodeToBackend(code: any) {
-  console.log(code)
   try {
     const payload = {
       code,
@@ -87,7 +86,10 @@ async function sendCodeToBackend(code: any) {
             <button class="hover:scale-[1.01] active:scale-[0.98] py-3 rounded-xl bg-violet-500 text-white text-lg font-bold" @click.prevent="login">
               Sign in
             </button>
-            <button @click.prevent="googleLogin" class="hover:scale-[1.01] active:scale-[0.98] py-3 rounded-xl flex items-center justify-center gap-2 border-2 border-gray-100">
+            <button
+              @click.prevent="googleLogin"
+              class="hover:scale-[1.01] active:scale-[0.98] py-3 rounded-xl flex items-center justify-center gap-2 border-2 border-gray-100"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="30" height="30" viewBox="0 0 48 48">
                 <path
                   fill="#FFC107"
