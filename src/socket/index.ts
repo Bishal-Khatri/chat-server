@@ -11,7 +11,7 @@ import { SECRET_KEY } from '@config';
  */
 const mountJoinChatEvent = socket => {
   socket.on(ChatEvent.JOIN_CHAT_EVENT, chatId => {
-    console.log(`User joined the chat 🤝. chatId: `, chatId);
+    console.log(`User joined the chat. chatId: `, chatId);
     // joining the room with the chatId will allow specific events to be fired where we don't bother about the users like typing events
     // E.g. When user types we don't want to emit that event to specific participant.
     // We want to just emit that to the chat where the typing is happening
@@ -25,6 +25,7 @@ const mountJoinChatEvent = socket => {
  */
 const mountParticipantTypingEvent = (socket) => {
   socket.on(ChatEvent.TYPING_EVENT, (chatId) => {
+    console.log(chatId)
     socket.in(chatId).emit(ChatEvent.TYPING_EVENT, chatId);
   });
 };
@@ -42,7 +43,6 @@ const mountParticipantStoppedTypingEvent = (socket) => {
 
 const initializeSocketIO = (io) => {
     return io.on("connection", async (socket) => {
-      console.log("User Connected");
       try {
         const { token } = socket.handshake.auth;
 
@@ -64,7 +64,7 @@ const initializeSocketIO = (io) => {
         // so that the client can catch the event and show the notifications.
         socket.join(user.id.toString());
         socket.emit(ChatEvent.CONNECTED_EVENT); // emit the connected event so that client is aware
-        console.log("User connected 🗼. userId: ", user.id.toString());
+        console.log("User connected. userId: ", user.id.toString());
   
         // Common events that needs to be mounted on the initialization
         mountJoinChatEvent(socket);

@@ -25,11 +25,15 @@ function toggleEmoji() {
 
 onMounted(async () => {
   scrollToBottom();
+  socket.on(ChatEvent.TYPING_EVENT, (payload: any) => {
+    console.log(payload)
+  });
   socket.on(ChatEvent.MESSAGE_RECEIVED_EVENT, (payload: any) => {
     chatStore.messages.push(payload);
     scrollToBottom();
     playNotification();
   });
+  
 });
 
 function playNotification() {
@@ -43,6 +47,10 @@ async function scrollToBottom() {
   if (element && element.lastElementChild !== null) {
     element.lastElementChild.scrollIntoView({ behavior: 'smooth' });
   }
+}
+
+async function emitStartTypingEvent() {
+  socket.emit(ChatEvent.TYPING_EVENT, chatStore.current_chat.id);
 }
 
 async function sendMessage() {
@@ -60,7 +68,7 @@ async function sendMessage() {
   }
 }
 
-function formatDate(date){
+function formatDate(date: Date){
   return moment(date).format("MMM DD, hh:mm a");
 }
 
@@ -163,6 +171,7 @@ function formatDate(date){
         </a>
         <input
           v-model="newMessage"
+          @keyup="emitStartTypingEvent"
           @keyup.enter="sendMessage"
           type="text"
           class="flex-1 p-4 border-0 rounded-md text-white focus:ring-0 bg-gray-800 outline outline-transparent focus:bg-gray-900"
